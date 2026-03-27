@@ -1,0 +1,7 @@
+project_golf_source/
+__pycache__/
+*.json
+deploy_pod*.py
+list_*.py
+query.json
+.antigravityignore
