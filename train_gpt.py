@@ -18,7 +18,23 @@ import torch
 import torch.distributed as dist
 import torch.nn.functional as F
 from torch import Tensor, nn
-from flash_attn_interface import flash_attn_func as flash_attn_3_func
+
+try:
+    from flash_attn_interface import flash_attn_func as flash_attn_3_func
+except ImportError:
+    # Fallback for Codespaces/CPU environments
+    def flash_attn_3_func(q, k, v, causal=True):
+        # Scale q
+        q = q * (q.size(-1)**-0.5)
+        # B, T, H, D -> B, H, T, D
+        q, k, v = q.transpose(1, 2), k.transpose(1, 2), v.transpose(1, 2)
+        # Hkv must divide H
+        attr = torch.matmul(q, k.transpose(-2, -1))
+        if causal:
+            mask = torch.triu(torch.ones(attr.size(-2), attr.size(-1), device=q.device), diagonal=1).bool()
+            attr = attr.masked_fill(mask, float('-inf'))
+        attn = F.softmax(attr, dim=-1)
+        return torch.matmul(attn, v).transpose(1, 2)
 
 # --- Project Golf Ball Hyperparameters ---
 
@@ -113,7 +129,6 @@ class Muon(torch.optim.Optimizer):
     def _build(self):
         self._distributed = dist.is_available() and dist.is_initialized()
         self._world_size = dist.get_world_size() if self._distributed else 1
-        self._rank = dist.get_rank() if self._distributed else 0
         ws = self._world_size
         self._bank_meta = []
         for group in self.param_groups:
@@ -194,7 +209,7 @@ class Muon(torch.optim.Optimizer):
             if hasattr(self, '_rs_futures'): del self._rs_futures
         return loss
 
-# --- Transformer modules with Project Golf Ball innovations ---
+# --- Transformer modules ---
 
 class RMSNorm(nn.Module):
     def __init__(self, eps: float = 1e-6):
@@ -306,7 +321,6 @@ class GPT(nn.Module):
         self.num_decoder = h.num_layers - self.num_encoder
         self.skip_weights = nn.Parameter(torch.ones(min(self.num_encoder, self.num_decoder), h.model_dim))
         
-        # Banks: QO (2*L, D, D), KV (2*L, D_kv, D), MLP_UP (L, D_mlp, D), MLP_DOWN (L, D, D_mlp)
         head_dim = h.model_dim // h.num_heads
         kv_dim, mlp_dim = h.num_kv_heads * head_dim, int(h.mlp_mult * h.model_dim)
         self.num_layers = h.num_layers
@@ -329,12 +343,12 @@ class GPT(nn.Module):
         nn.init.normal_(self.tok_emb.weight, std=self.h.tied_embed_init_std)
         proj_scale = 1.0 / math.sqrt(2 * self.num_layers)
         for i in range(self.num_layers):
-            nn.init.orthogonal_(self.qo_bank.data[i], gain=1.0)        # Q
-            nn.init.zeros_(self.qo_bank.data[self.num_layers + i])     # Out
-            nn.init.orthogonal_(self.kv_bank.data[i], gain=1.0)        # K
-            nn.init.orthogonal_(self.kv_bank.data[self.num_layers + i], gain=1.0) # V
-            nn.init.orthogonal_(self.mlp_up_bank.data[i], gain=1.0)    # Up
-            nn.init.zeros_(self.mlp_down_bank.data[i])                  # Down
+            nn.init.orthogonal_(self.qo_bank.data[i], gain=1.0)
+            nn.init.zeros_(self.qo_bank.data[self.num_layers + i])
+            nn.init.orthogonal_(self.kv_bank.data[i], gain=1.0)
+            nn.init.orthogonal_(self.kv_bank.data[self.num_layers + i], gain=1.0)
+            nn.init.orthogonal_(self.mlp_up_bank.data[i], gain=1.0)
+            nn.init.zeros_(self.mlp_down_bank.data[i])
             self.qo_bank.data[self.num_layers + i].mul_(proj_scale)
             self.mlp_down_bank.data[i].mul_(proj_scale)
 
@@ -363,7 +377,6 @@ def quantize_per_row_mse_search(t: Tensor, bits: int) -> tuple[Tensor, Tensor]:
     t32 = t.float()
     clip_range = (2**(bits-1)) - 1
     best_q, best_s, best_err = None, None, float('inf')
-    # Search over 5 clip quantiles
     for pct in [0.999, 0.9995, 0.9999, 0.99999, 1.0]:
         row_clip = torch.quantile(t32.abs(), pct, dim=1) if pct < 1.0 else t32.abs().amax(dim=1)
         s = (row_clip / clip_range).clamp_min(1e-6).to(torch.float16)
@@ -374,10 +387,6 @@ def quantize_per_row_mse_search(t: Tensor, bits: int) -> tuple[Tensor, Tensor]:
 
 def project_golf_quantize(model: GPT) -> bytes:
     sd = {k: v.cpu() for k, v in model.state_dict().items()}
-    # Project Golf Ball Mixed Precision:
-    # - tok_emb: FP16
-    # - mlp_down_bank: Int5
-    # - others: Int6
     result, meta = {}, {}
     for name, t in sd.items():
         if "tok_emb" in name:
@@ -391,23 +400,29 @@ def project_golf_quantize(model: GPT) -> bytes:
             q, s = quantize_per_row_mse_search(t.view(t.shape[0], -1), bits)
             result[name + ".q"], result[name + ".s"] = q, s
             meta[name] = {"bits": bits, "shape": t.shape}
-            
     buf = io.BytesIO()
     torch.save({"w": result, "m": meta}, buf)
     return lzma.compress(buf.getvalue(), preset=6)
 
-# --- Data Loading & Eval ---
+# --- Data Loading ---
 
 def load_data_shard(file: Path) -> Tensor:
     header = np.fromfile(file, dtype="<i4", count=256)
     num_tokens = int(header[2])
     return torch.from_numpy(np.fromfile(file, dtype="<u2", count=num_tokens, offset=1024).astype(np.uint16))
 
+def load_all_tokens(pattern: str, seq_len: int) -> Tensor:
+    files = [Path(p) for p in sorted(glob.glob(pattern))]
+    if not files: return torch.zeros(1, dtype=torch.uint16)
+    tokens = torch.cat([load_data_shard(f) for f in files])
+    usable = (tokens.numel() // seq_len) * seq_len
+    return tokens[:usable+1]
+
 class TokenStream:
     def __init__(self, pattern: str):
         self.files = [Path(p) for p in sorted(glob.glob(pattern))]
         self.idx, self.pos = 0, 0
-        self.tokens = load_data_shard(self.files[0])
+        self.tokens = load_data_shard(self.files[0]) if self.files else torch.zeros(1, dtype=torch.uint16)
     def take(self, n: int) -> Tensor:
         chunks = []
         while n > 0:
@@ -428,7 +443,7 @@ class DistributedTokenLoader:
         n = tokens // (self.ws * accum) + 1
         chunk = self.stream.take(n * self.ws).to(self.device, dtype=torch.int64)
         local = chunk[self.rank * n : self.rank * n + n]
-        return local[:-1].view(-1, seq_len), local[1:].view(-1, seq_len)
+        return local[:-1].reshape(-1, seq_len), local[1:].reshape(-1, seq_len)
 
 def build_sentencepiece_luts(sp: spm.SentencePieceProcessor, vocab_size: int, device: torch.device):
     bb, ls, bnd = np.zeros(vocab_size, dtype=np.int16), np.zeros(vocab_size, dtype=np.bool_), np.ones(vocab_size, dtype=np.bool_)
@@ -442,37 +457,99 @@ def build_sentencepiece_luts(sp: spm.SentencePieceProcessor, vocab_size: int, de
             bb[i] = len(p.encode("utf-8"))
     return torch.tensor(bb, device=device), torch.tensor(ls, device=device), torch.tensor(bnd, device=device)
 
+# --- Evaluation & TTT ---
+
+def eval_val(args: Hyperparameters, model: nn.Module, rank: int, ws: int, device: torch.device, val_tokens: Tensor, luts: tuple):
+    bb, ls, bnd = luts
+    model.eval()
+    loss_sum, tok_count, byte_count = 0.0, 0.0, 0.0
+    seq_len = args.train_seq_len
+    total_seqs = (val_tokens.numel() - 1) // seq_len
+    my_s, my_e = (total_seqs * rank) // ws, (total_seqs * (rank + 1)) // ws
+    with torch.inference_mode():
+        for i in range(my_s, my_e):
+            raw = val_tokens[i*seq_len:i*seq_len+seq_len+1].to(device, dtype=torch.int64)
+            x, y = raw[:-1].view(1, -1), raw[1:].view(1, -1)
+            with torch.autocast(device_type="cuda", dtype=torch.bfloat16):
+                loss_sum += model(x, y).item() * seq_len
+            tok_count += seq_len
+            tb = bb[y[0]].float() + (ls[y[0]] & ~bnd[x[0]]).float()
+            byte_count += tb.sum().item()
+    
+    sums = torch.tensor([loss_sum, tok_count, byte_count], device=device)
+    if dist.is_available() and dist.is_initialized(): dist.all_reduce(sums, op=dist.ReduceOp.SUM)
+    val_loss = sums[0] / sums[1]
+    val_bpb = (val_loss / math.log(2.0)) * (sums[1] / sums[2])
+    return val_loss.item(), val_bpb.item()
+
 def eval_val_sliding_ttt(args: Hyperparameters, model: nn.Module, rank: int, ws: int, device: torch.device, val_tokens: Tensor, luts: tuple):
     bb, ls, bnd = luts
     stride, ttt_chunk, seq_len = args.eval_stride, args.ttt_chunk_tokens, args.train_seq_len
     total = val_tokens.numel() - 1
-    optimizer = torch.optim.SGD([p for p in model.parameters() if p.requires_grad], lr=args.ttt_lr, momentum=args.ttt_momentum)
+    ttt_params = [p for name, p in model.named_parameters() if p.requires_grad and all(f"blocks.{bi}." not in name for bi in range(args.ttt_freeze_blocks))]
+    optimizer = torch.optim.SGD(ttt_params, lr=args.ttt_lr, momentum=args.ttt_momentum)
     loss_sum, tok_count, byte_count = 0.0, 0.0, 0.0
     
     num_chunks = (total + ttt_chunk - 1) // ttt_chunk
     for ci in range(num_chunks):
         c_start, c_end = ci * ttt_chunk, min((ci + 1) * ttt_chunk, total)
-        # Score
+        # SCORE (Inference)
         model.eval()
         with torch.inference_mode():
-            # (Simplified scoring for BREVITY in this template)
-            pass
-        # Train
-        model.train()
-        # (Simplified TTT update for BREVITY)
-        pass
-    return 0.0, 0.0 # Placeholder: return real BPB after implementation
+            # Sliding window scoring across the chunk
+            for ws_coord in range(c_start, c_end, stride):
+                end_coord = min(ws_coord + seq_len, total)
+                if end_coord - ws_coord < 1: continue
+                raw = val_tokens[ws_coord:end_coord+1].to(device, dtype=torch.int64)
+                x, y = raw[:-1].view(1, -1), raw[1:].view(1, -1)
+                s = 0 if ws_coord == 0 else max(len(raw)-1 - stride, 0)
+                with torch.autocast(device_type="cuda", dtype=torch.bfloat16):
+                    logits = model.forward_logits(x)
+                    nll = F.cross_entropy(logits[0].float(), y[0], reduction="none")
+                loss_sum += nll[s:].sum().item()
+                tok_count += len(nll[s:])
+                tb = bb[y[0, s:]].float() + (ls[y[0, s:]] & ~bnd[x[0, s:]]).float()
+                byte_count += tb.sum().item()
+        
+        # TRAIN (TTT)
+        if ci < num_chunks - 1:
+            model.train()
+            chunk_tokens = val_tokens[c_start:c_end+1].to(device, dtype=torch.int64)
+            for _ in range(args.ttt_epochs):
+                for i in range(0, len(chunk_tokens)-1, seq_len):
+                    x_t, y_t = chunk_tokens[i:i+seq_len].view(1, -1), chunk_tokens[i+1:i+seq_len+1].view(1, -1)
+                    if x_t.size(1) < 1: continue
+                    optimizer.zero_grad()
+                    with torch.autocast(device_type="cuda", dtype=torch.bfloat16):
+                        loss = model(x_t, y_t)
+                    loss.backward()
+                    if dist.is_available() and dist.is_initialized() and ws > 1:
+                        for p in ttt_params: dist.all_reduce(p.grad, op=dist.ReduceOp.AVG)
+                    torch.nn.utils.clip_grad_norm_(ttt_params, args.ttt_grad_clip)
+                    optimizer.step()
+                    
+    sums = torch.tensor([loss_sum, tok_count, byte_count], device=device)
+    if dist.is_available() and dist.is_initialized(): dist.all_reduce(sums, op=dist.ReduceOp.SUM)
+    val_loss = sums[0] / sums[1]
+    val_bpb = (val_loss / math.log(2.0)) * (sums[1] / sums[2])
+    return val_loss.item(), val_bpb.item()
 
 # --- Main Training Loop ---
 
 def main():
     args = Hyperparameters()
-    dist.init_process_group(backend="nccl")
-    rank, ws, local_rank = dist.get_rank(), dist.get_world_size(), int(os.environ["LOCAL_RANK"])
+    distributed = "RANK" in os.environ
+    if distributed:
+        dist.init_process_group(backend="nccl")
+        rank, ws, local_rank = dist.get_rank(), dist.get_world_size(), int(os.environ["LOCAL_RANK"])
+    else:
+        rank, ws, local_rank = 0, 1, 0
     device = torch.device("cuda", local_rank)
     
+    if rank == 0: print(f"Starting Project Golf Ball | Run ID: {args.run_id}")
+    
     sp = spm.SentencePieceProcessor(model_file=args.tokenizer_path)
-    val_tokens = load_data_shard(Path(args.val_files.replace("*", "0"))) # Simplified val load
+    val_tokens = load_all_tokens(args.val_files, args.train_seq_len)
     luts = build_sentencepiece_luts(sp, args.vocab_size, device)
     
     model = GPT(args).to(device).bfloat16()
@@ -485,32 +562,42 @@ def main():
     optimizer_adam = torch.optim.AdamW([p for name, p in model.named_parameters() if p.ndim < 2 or "tok_emb" in name], lr=args.scalar_lr, betas=(args.beta1, args.beta2), fused=True)
     
     train_loader = DistributedTokenLoader(args.train_files, rank, ws, device)
-    t0 = time.perf_counter()
+    t_start = time.perf_counter()
     
     for step in range(args.iterations):
-        scale = 1.0 - (step / args.iterations) # Simple linear decay
+        elapsed = time.perf_counter() - t_start
+        if elapsed > args.max_wallclock_seconds: break
+        
+        scale = 1.0 - (step / args.iterations)
         for pg in optimizer_muon.param_groups: pg['lr'] = args.matrix_lr * scale
-        for pg in optimizer_adam.param_groups: pg['lr'] = (args.tied_embed_lr if "tok_emb" in pg.get("name", "") else args.scalar_lr) * scale
+        for pg in optimizer_adam.param_groups: pg['lr'] = (args.tied_embed_lr if any("tok_emb" in n for n, p in model.named_parameters() if p is pg['params'][0]) else args.scalar_lr) * scale
         
         optimizer_muon.zero_grad(); optimizer_adam.zero_grad()
-        for _ in range(8 // ws):
-            x, y = train_loader.next_batch(args.train_batch_tokens, args.train_seq_len, 8 // ws)
+        accum = 8 // ws if ws <= 8 else 1
+        for _ in range(accum):
+            x, y = train_loader.next_batch(args.train_batch_tokens, args.train_seq_len, accum)
             with torch.autocast(device_type="cuda", dtype=torch.bfloat16):
                 loss = model(x, y)
-            (loss / (8 // ws)).backward()
+            (loss / accum).backward()
             
         optimizer_muon.launch_reduce_scatters()
         for p in [p for name, p in model.named_parameters() if p.ndim < 2 or "tok_emb" in name]:
-            if p.grad is not None: dist.all_reduce(p.grad, op=dist.ReduceOp.AVG)
+            if p.grad is not None and distributed: dist.all_reduce(p.grad, op=dist.ReduceOp.AVG)
         optimizer_adam.step()
         optimizer_muon.step()
         
-        if rank == 0 and step % 500 == 0:
-            print(f"Step {step} | Loss {loss.item():.4f} | Time {time.perf_counter()-t0:.1f}s")
+        if rank == 0 and step % args.train_log_every == 0:
+            print(f"Step {step} | Loss {loss.item():.4f} | Time {elapsed:.1f}s | Progress {step/args.iterations:.1%}")
             
     if rank == 0:
+        print("Training complete. Quantizing...")
         blob = project_golf_quantize(model)
         with open("final_model.ptz", "wb") as f: f.write(blob)
         print(f"Final Artifact Size: {len(blob)} bytes")
+        
+        if args.ttt_enabled:
+            print("Running Test-Time Training (TTT) Evaluator...")
+            _, ttt_bpb = eval_val_sliding_ttt(args, model, rank, ws, device, val_tokens, luts)
+            print(f"Final TTT BPB: {ttt_bpb:.6f}")
 
 if __name__ == "__main__": main()
