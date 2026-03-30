@@ -1,0 +1,93 @@
+name: Deploy and Train (RunPod)
+
+on:
+  workflow_dispatch:
+    inputs:
+      gpu_count:
+        description: 'Number of GPUs (e.g. 1 or 8)'
+        required: true
+        default: '1'
+      template_id:
+        description: 'RunPod Template ID'
+        required: true
+        default: 't7iu9ugzpi'
+
+jobs:
+  train:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Install dependencies
+        run: pip install requests
+
+      - name: Deploy Pod
+        id: deploy
+        env:
+          RUNPOD_API_KEY: ${{ secrets.RUNPOD_API_KEY }}
+        run: |
+          # The run_challenge.py script handles the deployment and waits for the IP/Port.
+          # We use --json for machine-readable output.
+          RESULT=$(python run_challenge.py --json --count ${{ github.event.inputs.gpu_count }} --template ${{ github.event.inputs.template_id }})
+          echo "POD_ID=$(echo $RESULT | jq -r .pod_id)" >> $GITHUB_ENV
+          echo "IP=$(echo $RESULT | jq -r .ip)" >> $GITHUB_ENV
+          echo "PORT=$(echo $RESULT | jq -r .port)" >> $GITHUB_ENV
+          echo "Pod ID: $(echo $RESULT | jq -r .pod_id)"
+          echo "SSH: root@$(echo $RESULT | jq -r .ip) -p $(echo $RESULT | jq -r .port)"
+
+      - name: Setup SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          ssh-keyscan -p ${{ env.PORT }} ${{ env.IP }} >> ~/.ssh/known_hosts
+
+      - name: Run Training on Pod
+        run: |
+          ssh -i ~/.ssh/id_ed25519 root@${{ env.IP }} -p ${{ env.PORT }} "bash -c '
+            pip install --break-system-packages sentencepiece huggingface_hub flash-attn && \
+            cd /workspace && \
+            git clone https://github.com/openai/parameter-golf.git && \
+            cd parameter-golf && \
+            python3 data/cached_challenge_fineweb.py --variant sp1024 --train-shards 1 && \
+            cd /workspace && \
+            git clone -b fix-train-gpt https://github.com/${{ github.repository }}.git project_golf && \
+            cp project_golf/train_gpt.py parameter-golf/train_gpt.py && \
+            cd parameter-golf && \
+            torchrun --standalone --nproc_per_node=${{ github.event.inputs.gpu_count }} train_gpt.py
+          '" > train.log 2>&1
+          cat train.log
+
+      - name: Extract Results & Create Summary
+        run: |
+          BPB=$(grep "Final TTT BPB:" train.log | tail -1 | awk "{print \$NF}")
+          SIZE=$(grep "Final Artifact Size:" train.log | tail -1 | awk "{print \$NF}")
+          echo "### Challenge Results 🚀" >> $GITHUB_STEP_SUMMARY
+          echo "- **Final TTT BPB**: $BPB" >> $GITHUB_STEP_SUMMARY
+          echo "- **Artifact Size**: $SIZE bytes" >> $GITHUB_STEP_SUMMARY
+          if [ -z "$BPB" ]; then echo "⚠️ Warning: BPB result not found in logs." >> $GITHUB_STEP_SUMMARY; fi
+
+      - name: Collect Artifact
+        run: |
+          scp -i ~/.ssh/id_ed25519 -P ${{ env.PORT }} root@${{ env.IP }}:/workspace/parameter-golf/final_model.ptz ./final_model.ptz
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: final_model_ptz
+          path: final_model.ptz
+
+      - name: Terminate Pod
+        if: always()
+        env:
+          RUNPOD_API_KEY: ${{ secrets.RUNPOD_API_KEY }}
+        run: |
+          if [ ! -z "${{ env.POD_ID }}" ]; then
+            python run_challenge.py --terminate ${{ env.POD_ID }}
+          fi
