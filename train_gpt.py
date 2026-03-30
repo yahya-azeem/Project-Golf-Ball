@@ -22,19 +22,19 @@ from torch import Tensor, nn
 try:
     from flash_attn_interface import flash_attn_func as flash_attn_3_func
 except ImportError:
-    # Fallback for Codespaces/CPU environments
     def flash_attn_3_func(q, k, v, causal=True):
-        # Scale q
         q = q * (q.size(-1)**-0.5)
-        # B, T, H, D -> B, H, T, D
         q, k, v = q.transpose(1, 2), k.transpose(1, 2), v.transpose(1, 2)
-        # Hkv must divide H
         attr = torch.matmul(q, k.transpose(-2, -1))
         if causal:
             mask = torch.triu(torch.ones(attr.size(-2), attr.size(-1), device=q.device), diagonal=1).bool()
             attr = attr.masked_fill(mask, float('-inf'))
         attn = F.softmax(attr, dim=-1)
         return torch.matmul(attn, v).transpose(1, 2)
+
+# --- Best Practices Environment Toggles ---
+USE_COMPILE = int(os.environ.get("USE_COMPILE", "1"))
+SKIP_INIT_VAL = int(os.environ.get("SKIP_INIT_VAL", "0"))
 
 # --- Project Golf Ball Hyperparameters ---
 
@@ -84,6 +84,7 @@ class Hyperparameters:
     beta2 = 0.95
     adam_eps = 1e-8
     grad_clip_norm = 0.3
+    qk_gain_init = 0.5
     
     # Advanced Techniques
     xsa_last_n = 4
@@ -262,7 +263,7 @@ def apply_rotary_emb(x: Tensor, cos: Tensor, sin: Tensor, rope_dims: int = 0) ->
     return torch.cat((x1 * cos + x2 * sin, x1 * (-sin) + x2 * cos), dim=-1)
 
 class CausalSelfAttention(nn.Module):
-    def __init__(self, dim: int, num_heads: int, num_kv_heads: int, rope_base: float, qk_gain_init: float):
+    def __init__(self, dim: int, num_heads: int, num_kv_heads: int, rope_base: float, qk_gain_init: float = 0.5):
         super().__init__()
         self.num_heads, self.num_kv_heads, self.head_dim = num_heads, num_kv_heads, dim // num_heads
         self.q_gain = nn.Parameter(torch.full((num_heads,), qk_gain_init, dtype=torch.float32))
@@ -329,7 +330,7 @@ class GPT(nn.Module):
         self.mlp_up_bank = nn.Parameter(torch.empty(h.num_layers, mlp_dim, h.model_dim))
         self.mlp_down_bank = nn.Parameter(torch.empty(h.num_layers, h.model_dim, mlp_dim))
         
-        self.blocks = nn.ModuleList([Block(h.model_dim, h.num_heads, h.num_kv_heads, h.mlp_mult, h.rope_base, h.qk_gain_init) for _ in range(h.num_layers)])
+        self.blocks = nn.ModuleList([Block(h.model_dim, h.num_heads, h.num_kv_heads, h.mlp_mult, h.rope_base, getattr(h, 'qk_gain_init', 0.5)) for _ in range(h.num_layers)])
         for i, block in enumerate(self.blocks):
             block.attn.rope_dims = h.rope_dims
             block.attn.rotary = Rotary(head_dim, base=h.rope_base, train_seq_len=2048, rope_dims=h.rope_dims)
@@ -407,6 +408,8 @@ def project_golf_quantize(model: GPT) -> bytes:
 # --- Data Loading ---
 
 def load_data_shard(file: Path) -> Tensor:
+    if file.stat().st_size < 1024:
+        raise ValueError(f"File {file} is too small or corrupt (HuggingFace 0-byte download?)")
     header = np.fromfile(file, dtype="<i4", count=256)
     num_tokens = int(header[2])
     return torch.from_numpy(np.fromfile(file, dtype="<u2", count=num_tokens, offset=1024).astype(np.uint16))
@@ -482,7 +485,7 @@ def eval_val(args: Hyperparameters, model: nn.Module, rank: int, ws: int, device
     val_bpb = (val_loss / math.log(2.0)) * (sums[1] / sums[2])
     return val_loss.item(), val_bpb.item()
 
-def eval_val_sliding_ttt(args: Hyperparameters, model: nn.Module, rank: int, ws: int, device: torch.device, val_tokens: Tensor, luts: tuple):
+def eval_val_sliding_ttt(args: Hyperparameters, model: nn.Module, rank: int, world_size: int, device: torch.device, val_tokens: Tensor, luts: tuple):
     bb, ls, bnd = luts
     stride, ttt_chunk, seq_len = args.eval_stride, args.ttt_chunk_tokens, args.train_seq_len
     total = val_tokens.numel() - 1
@@ -523,7 +526,7 @@ def eval_val_sliding_ttt(args: Hyperparameters, model: nn.Module, rank: int, ws:
                     with torch.autocast(device_type="cuda", dtype=torch.bfloat16):
                         loss = model(x_t, y_t)
                     loss.backward()
-                    if dist.is_available() and dist.is_initialized() and ws > 1:
+                    if dist.is_available() and dist.is_initialized() and world_size > 1:
                         for p in ttt_params: dist.all_reduce(p.grad, op=dist.ReduceOp.AVG)
                     torch.nn.utils.clip_grad_norm_(ttt_params, args.ttt_grad_clip)
                     optimizer.step()
@@ -553,6 +556,12 @@ def main():
     luts = build_sentencepiece_luts(sp, args.vocab_size, device)
     
     model = GPT(args).to(device).bfloat16()
+    
+    # Runpod Tip: Compile for competition speed (free wallclock time)
+    if USE_COMPILE:
+        if rank == 0: print("Compiling model (takes 3-4 mins)...")
+        model = torch.compile(model)
+        
     model.qo_bank.data = model.qo_bank.data.float()
     model.kv_bank.data = model.kv_bank.data.float()
     model.mlp_up_bank.data = model.mlp_up_bank.data.float()
@@ -564,6 +573,11 @@ def main():
     train_loader = DistributedTokenLoader(args.train_files, rank, ws, device)
     t_start = time.perf_counter()
     
+    if not SKIP_INIT_VAL:
+        if rank == 0: print("Running initial validation...")
+        val_loss, val_bpb = eval_val(args, model, rank, ws, device, val_tokens, luts)
+        if rank == 0: print(f"Initial Val Loss: {val_loss:.4f} | Initial BPB: {val_bpb:.4f}")
+
     for step in range(args.iterations):
         elapsed = time.perf_counter() - t_start
         if elapsed > args.max_wallclock_seconds: break
@@ -588,16 +602,19 @@ def main():
         
         if rank == 0 and step % args.train_log_every == 0:
             print(f"Step {step} | Loss {loss.item():.4f} | Time {elapsed:.1f}s | Progress {step/args.iterations:.1%}")
-            
+
+    # --- Post-training: Quantize and Evaluate ---
     if rank == 0:
         print("Training complete. Quantizing...")
-        blob = project_golf_quantize(model)
+        # If compiled, access the original model
+        m_to_quant = model._orig_mod if hasattr(model, "_orig_mod") else model
+        blob = project_golf_quantize(m_to_quant)
         with open("final_model.ptz", "wb") as f: f.write(blob)
         print(f"Final Artifact Size: {len(blob)} bytes")
         
         if args.ttt_enabled:
             print("Running Test-Time Training (TTT) Evaluator...")
-            _, ttt_bpb = eval_val_sliding_ttt(args, model, rank, ws, device, val_tokens, luts)
+            _, ttt_bpb = eval_val_sliding_ttt(args, m_to_quant, rank, ws, device, val_tokens, luts)
             print(f"Final TTT BPB: {ttt_bpb:.6f}")
 
 if __name__ == "__main__": main()
