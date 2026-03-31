@@ -11,12 +11,24 @@ API_KEY = os.environ.get("RUNPOD_API_KEY")
 URL = "https://api.runpod.io/graphql"
 
 def run_query(query, variables=None):
+    if not API_KEY:
+        print("DEBUG: API_KEY is missing!")
+    else:
+        print(f"DEBUG: API_KEY length: {len(API_KEY)}")
+        
     headers = {
         "Content-Type": "application/json",
         "Authorization": f"Bearer {API_KEY}"
     }
-    response = requests.post(URL, json={'query': query, 'variables': variables}, headers=headers)
-    return response.json()
+    try:
+        response = requests.post(URL, json={'query': query, 'variables': variables}, headers=headers)
+        if response.status_code != 200:
+            print(f"DEBUG: HTTP Error {response.status_code}: {response.text}")
+            return {"errors": [{"message": f"HTTP {response.status_code}: {response.text}"}]}
+        return response.json()
+    except Exception as e:
+        print(f"DEBUG: Exception during request: {e}")
+        return {"errors": [{"message": str(e)}]}
 
 def get_gpu_ids(gpu_name="H100"):
     query = "{ gpuTypes { id displayName } }"
