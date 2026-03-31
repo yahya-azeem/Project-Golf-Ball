@@ -59,7 +59,8 @@ jobs:
       - name: Run Smoke Test on Pod
         run: |
           ssh -i ~/.ssh/id_ed25519 root@${{ steps.deploy.outputs.ip }} -p ${{ steps.deploy.outputs.port }} "bash -c '
-            pip install --break-system-packages sentencepiece huggingface_hub flash-attn && \
+            pip install --break-system-packages sentencepiece huggingface_hub && \
+            pip install --break-system-packages flash-attn --no-build-isolation && \
             cd /workspace && \
             git clone -b main https://github.com/${{ github.repository }}.git project_golf && \
             cd /workspace && git clone https://github.com/openai/parameter-golf.git && \
@@ -113,7 +114,8 @@ jobs:
       - name: Run Full Training on Pod
         run: |
           ssh -i ~/.ssh/id_ed25519 root@${{ steps.deploy.outputs.ip }} -p ${{ steps.deploy.outputs.port }} "bash -c '
-            pip install --break-system-packages sentencepiece huggingface_hub flash-attn && \
+            pip install --break-system-packages sentencepiece huggingface_hub && \
+            pip install --break-system-packages flash-attn --no-build-isolation && \
             cd /workspace && \
             git clone -b main https://github.com/${{ github.repository }}.git project_golf && \
             cd /workspace && git clone https://github.com/openai/parameter-golf.git && \
