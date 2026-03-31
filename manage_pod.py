@@ -53,7 +53,6 @@ def get_pod_info(pod_id):
         id
         desiredStatus
         runtime {
-          status
           ports {
             ip
             publicPort
@@ -72,7 +71,7 @@ def get_all_resources():
         pods {
           id
           name
-          runtime { status }
+          runtime { uptime }
           gpuCount
         }
         networkVolumes {
@@ -92,19 +91,17 @@ def find_pod(gpu_type="H100", count=8):
         return None
     
     pods = res['data']['myself']['pods']
-    # Prioritize PAUSED pods, then RUNNING
-    for status in ['PAUSED', 'RUNNING']:
-        for pod in pods:
-            if pod['gpuCount'] == count and status == pod['runtime']['status']:
-                pod_name = pod.get('name', '').upper()
-                if not gpu_type or gpu_type.upper() in pod_name:
-                    return pod
-    
-    # Second pass: just count if no name match
-    for status in ['PAUSED', 'RUNNING']:
-        for pod in pods:
-            if pod['gpuCount'] == count and status == pod['runtime']['status']:
+    # Prioritize based on name and gpuCount for now
+    for pod in pods:
+        if pod['gpuCount'] == count:
+            pod_name = pod.get('name', '').upper()
+            if not gpu_type or gpu_type.upper() in pod_name:
                 return pod
+    
+    # Second pass: just count
+    for pod in pods:
+        if pod['gpuCount'] == count:
+            return pod
     return None
 
 def find_volume(target_size=30):
@@ -124,7 +121,7 @@ def wait_for_pod(pod_id, timeout=300):
         res = get_pod_info(pod_id)
         if 'data' in res and res['data']['pod']:
             runtime = res['data']['pod']['runtime']
-            if runtime and runtime['status'] == 'RUNNING' and runtime['ports']:
+            if runtime and runtime['ports']:
                 return res['data']['pod']
         time.sleep(10)
     return None
@@ -148,7 +145,7 @@ def main():
         pod = find_pod(count=args.gpu_count)
         if pod:
             if args.json: print(json.dumps(pod))
-            else: print(f"Found pod: {pod['id']} ({pod['name']}) - {pod['runtime']['status']}")
+            else: print(f"Found pod: {pod['id']} ({pod['name']})")
         else:
             if args.json: print(json.dumps({"error": "No matching pod found"}))
             else: print("No matching pod found.")
