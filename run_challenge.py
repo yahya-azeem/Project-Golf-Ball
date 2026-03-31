@@ -35,7 +35,7 @@ def get_gpu_ids(gpu_name="H100"):
                 matches.append(gpu['id'])
     return matches
 
-def deploy_pod(gpu_id, count=1, template_id="t7iu9ugzpi", cloud="SECURE"):
+def deploy_pod(gpu_id, count=1, template_id="t7iu9ugzpi", cloud="SECURE", ssh_public_key=None):
     # Using On-Demand mutation
     mutation = """
     mutation ($input: PodFindAndDeployOnDemandInput!) {
@@ -44,16 +44,18 @@ def deploy_pod(gpu_id, count=1, template_id="t7iu9ugzpi", cloud="SECURE"):
       }
     }
     """
-    variables = {
-        "input": {
-            "gpuTypeId": gpu_id,
-            "gpuCount": count,
-            "cloudType": cloud,
-            "templateId": template_id,
-            "containerDiskInGb": 50,
-            "volumeInGb": 50
-        }
+    input_data = {
+        "gpuTypeId": gpu_id,
+        "gpuCount": count,
+        "cloudType": cloud,
+        "templateId": template_id,
+        "containerDiskInGb": 50,
+        "volumeInGb": 50
     }
+    if ssh_public_key:
+        input_data["sshPublicKey"] = ssh_public_key
+        
+    variables = {"input": input_data}
     res = run_query(mutation, variables)
     if 'errors' in res:
         return res
@@ -100,6 +102,7 @@ def main():
     parser.add_argument("--count", type=int, default=1, help="GPU Count")
     parser.add_argument("--template", default="t7iu9ugzpi", help="Template ID")
     parser.add_argument("--cloud", default=None, help="Cloud Type (COMMUNITY or SECURE). If None, tries both.")
+    parser.add_argument("--ssh_public_key", help="Public key string to inject")
     args = parser.parse_args()
 
     if args.terminate:
@@ -128,7 +131,7 @@ def main():
         for cloud in clouds:
             if not args.json:
                 print(f"Attempting to deploy {gpu_id} on {cloud} cloud...")
-            pod_data = deploy_pod(gpu_id, count=args.count, template_id=args.template, cloud=cloud)
+            pod_data = deploy_pod(gpu_id, count=args.count, template_id=args.template, cloud=cloud, ssh_public_key=args.ssh_public_key)
             
             if pod_data and not (isinstance(pod_data, dict) and 'errors' in pod_data):
                 pod_id = pod_data['id']
