@@ -15,6 +15,10 @@ on:
         description: 'RunPod Template ID'
         required: true
         default: 't7iu9ugzpi'
+      cloud_type:
+        description: 'RunPod Cloud Type (SECURE or COMMUNITY)'
+        required: true
+        default: 'SECURE'
 
 jobs:
   smoke_test:
@@ -36,7 +40,7 @@ jobs:
         env:
           RUNPOD_API_KEY: ${{ secrets.RUNPOD_API_KEY }}
         run: |
-          python run_challenge.py --json --count ${{ github.event.inputs.gpu_count_smoke }} --template ${{ github.event.inputs.template_id }} > result.json 2>&1 || (cat result.json && exit 1)
+          python run_challenge.py --json --count ${{ github.event.inputs.gpu_count_smoke }} --template ${{ github.event.inputs.template_id }} --cloud ${{ github.event.inputs.cloud_type }} > result.json 2>&1 || (cat result.json && exit 1)
           cat result.json
           echo "pod_id=$(jq -r .pod_id result.json)" >> $GITHUB_OUTPUT
           echo "ip=$(jq -r .ip result.json)" >> $GITHUB_OUTPUT
@@ -87,7 +91,7 @@ jobs:
         env:
           RUNPOD_API_KEY: ${{ secrets.RUNPOD_API_KEY }}
         run: |
-          python run_challenge.py --json --count ${{ github.event.inputs.gpu_count_full }} --template ${{ github.event.inputs.template_id }} > result.json 2>&1 || (cat result.json && exit 1)
+          python run_challenge.py --json --count ${{ github.event.inputs.gpu_count_full }} --template ${{ github.event.inputs.template_id }} --cloud ${{ github.event.inputs.cloud_type }} > result.json 2>&1 || (cat result.json && exit 1)
           cat result.json
           echo "pod_id=$(jq -r .pod_id result.json)" >> $GITHUB_OUTPUT
           echo "ip=$(jq -r .ip result.json)" >> $GITHUB_OUTPUT
@@ -122,15 +126,18 @@ jobs:
           echo "- **Final TTT BPB**: $BPB" >> $GITHUB_STEP_SUMMARY
           echo "- **Artifact Size**: $SIZE bytes" >> $GITHUB_STEP_SUMMARY
 
-      - name: Collect Artifact
+      - name: Collect Artifacts
         run: |
           scp -i ~/.ssh/id_ed25519 -P ${{ steps.deploy.outputs.port }} root@${{ steps.deploy.outputs.ip }}:/workspace/parameter-golf/final_model.ptz ./final_model.ptz
+          scp -i ~/.ssh/id_ed25519 -P ${{ steps.deploy.outputs.port }} root@${{ steps.deploy.outputs.ip }}:/workspace/parameter-golf/data/tokenizers/fineweb_1024_bpe.model ./fineweb_1024_bpe.model
 
-      - name: Upload Artifact
+      - name: Upload Artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: final_model_ptz
-          path: final_model.ptz
+          name: challenge_artifacts
+          path: |
+            final_model.ptz
+            fineweb_1024_bpe.model
 
       - name: Terminate Full Pod
         if: always()
