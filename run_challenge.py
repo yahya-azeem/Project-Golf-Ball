@@ -18,16 +18,24 @@ def run_query(query, variables=None):
     response = requests.post(URL, json={'query': query, 'variables': variables}, headers=headers)
     return response.json()
 
-def get_gpu_id(gpu_name="H100"):
+def get_gpu_ids(gpu_name="H100"):
     query = "{ gpuTypes { id displayName } }"
     res = run_query(query)
-    if 'data' not in res: return None
+    if 'data' not in res: 
+        print(f"Error fetching GPU types: {res}")
+        return []
+    
+    matches = []
     for gpu in res['data']['gpuTypes']:
         if gpu_name in gpu['displayName']:
-            return gpu['id']
-    return None
+            # Prioritize SXM
+            if "SXM" in gpu['displayName']:
+                matches.insert(0, gpu['id'])
+            else:
+                matches.append(gpu['id'])
+    return matches
 
-def deploy_pod(gpu_id, count=1, template_id="t7iu9ugzpi"):
+def deploy_pod(gpu_id, count=1, template_id="t7iu9ugzpi", cloud="SECURE"):
     # Using On-Demand mutation
     mutation = """
     mutation ($input: PodFindAndDeployOnDemandInput!) {
@@ -40,7 +48,7 @@ def deploy_pod(gpu_id, count=1, template_id="t7iu9ugzpi"):
         "input": {
             "gpuTypeId": gpu_id,
             "gpuCount": count,
-            "cloudType": "COMMUNITY",
+            "cloudType": cloud,
             "templateId": template_id,
             "containerDiskInGb": 50,
             "volumeInGb": 50
@@ -48,7 +56,6 @@ def deploy_pod(gpu_id, count=1, template_id="t7iu9ugzpi"):
     }
     res = run_query(mutation, variables)
     if 'errors' in res:
-        # Errors should be handled by the caller visually
         return res
     return res['data']['podFindAndDeployOnDemand']
 
@@ -92,6 +99,7 @@ def main():
     parser.add_argument("--json", action="store_true", help="Output only JSON")
     parser.add_argument("--count", type=int, default=1, help="GPU Count")
     parser.add_argument("--template", default="t7iu9ugzpi", help="Template ID")
+    parser.add_argument("--cloud", default=None, help="Cloud Type (COMMUNITY or SECURE). If None, tries both.")
     args = parser.parse_args()
 
     if args.terminate:
@@ -102,23 +110,40 @@ def main():
             print(f"Termination requested: {res}")
         return
 
-    gpu_id = get_gpu_id()
-    if not gpu_id:
+    gpu_ids = get_gpu_ids()
+    if not gpu_ids:
         if args.json:
-            print(json.dumps({"error": "H100 not found"}))
+            print(json.dumps({"error": "No H100 variants found"}))
         else:
-            print("H100 not found.")
+            print("No H100 variants found.")
         sys.exit(1)
 
-    pod_data = deploy_pod(gpu_id, count=args.count, template_id=args.template)
-    if not pod_data or isinstance(pod_data, dict) and 'errors' in pod_data:
+    # Strategy: Try SECURE then COMMUNITY for each GPU variant
+    clouds = [args.cloud] if args.cloud else ["SECURE", "COMMUNITY"]
+    
+    pod_id = None
+    last_error = None
+    
+    for gpu_id in gpu_ids:
+        for cloud in clouds:
+            if not args.json:
+                print(f"Attempting to deploy {gpu_id} on {cloud} cloud...")
+            pod_data = deploy_pod(gpu_id, count=args.count, template_id=args.template, cloud=cloud)
+            
+            if pod_data and not (isinstance(pod_data, dict) and 'errors' in pod_data):
+                pod_id = pod_data['id']
+                break
+            else:
+                last_error = pod_data
+        if pod_id: break
+
+    if not pod_id:
         if args.json:
-            print(json.dumps({"error": "Failed to deploy", "details": pod_data.get('errors') if pod_data else "Unknown"}))
+            print(json.dumps({"error": "Failed to deploy on any H100 variant", "details": last_error}))
         else:
-            print(f"Failed to deploy: {pod_data.get('errors') if pod_data else 'Unknown'}")
+            print(f"Failed to deploy on any H100 variant: {last_error}")
         sys.exit(1)
 
-    pod_id = pod_data['id']
     pod = wait_for_pod(pod_id)
     if not pod:
         if args.json:

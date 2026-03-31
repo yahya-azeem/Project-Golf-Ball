@@ -16,9 +16,9 @@ on:
         required: true
         default: 't7iu9ugzpi'
       cloud_type:
-        description: 'RunPod Cloud Type (SECURE or COMMUNITY)'
-        required: true
-        default: 'SECURE'
+        description: 'RunPod Cloud Type (SECURE, COMMUNITY, or blank to try both)'
+        required: false
+        default: ''
 
 jobs:
   smoke_test:
