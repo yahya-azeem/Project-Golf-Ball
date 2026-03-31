@@ -48,8 +48,8 @@ def deploy_pod(gpu_id, count=1, template_id="t7iu9ugzpi"):
     }
     res = run_query(mutation, variables)
     if 'errors' in res:
-        print(f"Deployment Errors: {res['errors']}")
-        return None
+        # Errors should be handled by the caller visually
+        return res
     return res['data']['podFindAndDeployOnDemand']
 
 def terminate_pod(pod_id):
@@ -96,25 +96,33 @@ def main():
 
     if args.terminate:
         res = terminate_pod(args.terminate)
-        if not args.json: print(f"Termination requested: {res}")
-        else: print(json.dumps(res))
+        if args.json:
+            print(json.dumps(res))
+        else:
+            print(f"Termination requested: {res}")
         return
 
     gpu_id = get_gpu_id()
     if not gpu_id:
-        if not args.json: print("H100 not found.")
-        return
-
-    pod_data = deploy_pod(gpu_id, count=args.count, template_id=args.template)
-    if not pod_data:
-        if not args.json: print("Failed to deploy.")
-        return
-
-    pod_id = pod_data['id']
-    pod = wait_for_pod(pod_id)
+        if args.json:
+            print(json.dumps({"error": "H100 not found"}))
+        else:
+            print("H100 not found.")
+        sys.exit(1)
+    # ...
+    if not pod_data or isinstance(pod_data, dict) and 'errors' in pod_data:
+        if args.json:
+            print(json.dumps({"error": "Failed to deploy", "details": pod_data.get('errors') if pod_data else "Unknown"}))
+        else:
+            print(f"Failed to deploy: {pod_data.get('errors') if pod_data else 'Unknown'}")
+        sys.exit(1)
+    # ...
     if not pod:
-        if not args.json: print("Pod failed to start.")
-        return
+        if args.json:
+            print(json.dumps({"error": "Pod failed to start", "pod_id": pod_id}))
+        else:
+            print("Pod failed to start.")
+        sys.exit(1)
 
     ssh_port = None
     ip = None
