@@ -17,7 +17,7 @@ def deploy_pod_rest(gpu_type, count, template_id, volume_id=None, ssh_key=None):
     }
     payload = {
         "name": f"Parameter_Golf_{gpu_type}_{count}x",
-        "imageName": None, # Provided by template
+        "imageName": "mato1/proteus:styx", 
         "templateId": template_id,
         "gpuCount": count,
         "gpuTypeId": gpu_type,
