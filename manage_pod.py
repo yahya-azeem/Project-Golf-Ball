@@ -10,11 +10,6 @@ API_KEY = os.environ.get("RUNPOD_API_KEY")
 URL = "https://api.runpod.io/graphql"
 
 def run_query(query, variables=None):
-    if not API_KEY:
-        print("DEBUG: API_KEY is missing!")
-    else:
-        print(f"DEBUG: API_KEY length: {len(API_KEY)}")
-        
     headers = {
         "Content-Type": "application/json",
         "Authorization": f"Bearer {API_KEY}"
@@ -22,11 +17,9 @@ def run_query(query, variables=None):
     try:
         response = requests.post(URL, json={'query': query, 'variables': variables}, headers=headers, timeout=30)
         if response.status_code != 200:
-            print(f"DEBUG: HTTP Error {response.status_code}: {response.text}")
             return {"errors": [{"message": f"HTTP {response.status_code}: {response.text}"}]}
         return response.json()
     except Exception as e:
-        print(f"DEBUG: Exception during request: {e}")
         return {"errors": [{"message": str(e)}]}
 
 def resume_pod(pod_id, gpu_count=1):
@@ -96,7 +89,6 @@ def get_all_resources():
 def find_pod(gpu_type="H100", count=8):
     res = get_all_resources()
     if 'data' not in res or 'myself' not in res['data']:
-        print(f"DEBUG: Resource query failed or returned no data: {res}")
         return None
     
     pods = res['data']['myself']['pods']
@@ -104,7 +96,6 @@ def find_pod(gpu_type="H100", count=8):
     for status in ['PAUSED', 'RUNNING']:
         for pod in pods:
             if pod['gpuCount'] == count and status == pod['runtime']['status']:
-                # Filter by name if gpu_type is specified
                 pod_name = pod.get('name', '').upper()
                 if not gpu_type or gpu_type.upper() in pod_name:
                     return pod
@@ -125,6 +116,17 @@ def find_volume(target_size=30):
     for vol in volumes:
         if vol['size'] == target_size:
             return vol
+    return None
+
+def wait_for_pod(pod_id, timeout=300):
+    start_time = time.time()
+    while time.time() - start_time < timeout:
+        res = get_pod_info(pod_id)
+        if 'data' in res and res['data']['pod']:
+            runtime = res['data']['pod']['runtime']
+            if runtime and runtime['status'] == 'RUNNING' and runtime['ports']:
+                return res['data']['pod']
+        time.sleep(10)
     return None
 
 def main():
@@ -163,10 +165,8 @@ def main():
             sys.exit(1)
 
     elif args.resume:
-        # Check if we should find pod first if ID is "null" or empty
         pod_id = args.resume
         if not pod_id or pod_id == "null":
-            if not args.json: print("No Pod ID provided. Attempting to find pod...")
             pod = find_pod(count=args.gpu_count)
             if pod: pod_id = pod['id']
             else:
@@ -175,13 +175,10 @@ def main():
 
         res = resume_pod(pod_id, args.gpu_count)
         if 'errors' in res:
-            if args.json:
-                print(json.dumps(res))
-            else:
-                print(f"Error resuming pod: {res['errors']}")
+            if args.json: print(json.dumps(res))
+            else: print(f"Error resuming pod: {res['errors']}")
             sys.exit(1)
             
-        if not args.json: print(f"Resume requested for {pod_id}. Waiting for it to be ready...")
         pod = wait_for_pod(pod_id)
         if pod:
             ssh_port, ip = None, None
@@ -190,16 +187,13 @@ def main():
                     ssh_port, ip = port['publicPort'], port['ip']
                     break
             result = {"pod_id": pod_id, "ip": ip, "port": ssh_port, "status": "RUNNING", "was_resumed": True}
-            if args.json:
-                print(json.dumps(result))
-            else:
-                print(f"Pod is RUNNING at {ip}:{ssh_port}")
+            if args.json: print(json.dumps(result))
+            else: print(f"Pod is RUNNING at {ip}:{ssh_port}")
         else:
             print("Timed out waiting for pod to start.")
             sys.exit(1)
 
     elif args.stop:
-        # Check if we should find pod first if ID is "null" or empty
         pod_id = args.stop
         if not pod_id or pod_id == "null":
             pod = find_pod(count=args.gpu_count)
@@ -209,31 +203,16 @@ def main():
                 sys.exit(1)
 
         res = stop_pod(pod_id)
-        if args.json:
-            print(json.dumps(res))
-        else:
-            print(f"Stop requested: {res}")
+        if args.json: print(json.dumps(res))
+        else: print(f"Stop requested: {res}")
 
     elif args.info:
         pod = get_pod_info(args.info)
-        if args.json:
-            print(json.dumps(pod))
-        else:
-            print(pod)
+        if args.json: print(json.dumps(pod))
+        else: print(pod)
 
     else:
         parser.print_help()
-
-def wait_for_pod(pod_id, timeout=300):
-    start_time = time.time()
-    while time.time() - start_time < timeout:
-        res = get_pod_info(pod_id)
-        if 'data' in res and res['data']['pod']:
-            runtime = res['data']['pod']['runtime']
-            if runtime and runtime['status'] == 'RUNNING' and runtime['ports']:
-                return res['data']['pod']
-        time.sleep(10)
-    return None
 
 if __name__ == "__main__":
     main()
