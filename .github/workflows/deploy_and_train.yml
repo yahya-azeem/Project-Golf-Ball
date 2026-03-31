@@ -47,10 +47,11 @@ jobs:
           POD_ID="$SECRET_POD_ID"
           if [ -z "$POD_ID" ] || [ "$POD_ID" == "null" ]; then
             echo "Searching for existing 8xH100 pod..."
-            DISCOVERED_POD=$(python manage_pod.py --find-pod --gpu_count ${{ github.event.inputs.gpu_count }} --json)
+            # Use || true to prevent shell exit on failure
+            DISCOVERED_POD=$(python manage_pod.py --find-pod --gpu_count ${{ github.event.inputs.gpu_count }} --json 2>/dev/null || echo '{"error": "not found"}')
             echo "Discovery result: $DISCOVERED_POD"
-            if [ $? -eq 0 ] && [ "$DISCOVERED_POD" != "null" ]; then
-              POD_ID=$(echo $DISCOVERED_POD | jq -r .id)
+            if echo "$DISCOVERED_POD" | jq -e '.id' >/dev/null 2>&1; then
+              POD_ID=$(echo "$DISCOVERED_POD" | jq -r .id)
               echo "Discovered pod ID: $POD_ID"
             fi
           fi
@@ -67,24 +68,28 @@ jobs:
               echo "port=$(jq -r .port pod_info.json)" >> $GITHUB_OUTPUT
               exit 0
             fi
-            echo "Resume failed, falling back to discovery/deploy."
+            echo "Resume failed, falling back to fresh deploy."
           fi
 
           # 3. Determine Volume ID (Secret or Discovery)
           VOLUME_ID="$SECRET_VOLUME_ID"
           if [ -z "$VOLUME_ID" ] || [ "$VOLUME_ID" == "null" ]; then
             echo "Searching for 30GB network volume..."
-            DISCOVERED_VOL=$(python manage_pod.py --find-volume --json)
+            DISCOVERED_VOL=$(python manage_pod.py --find-volume --json 2>/dev/null || echo '{"error": "not found"}')
             echo "Volume discovery result: $DISCOVERED_VOL"
-            if [ $? -eq 0 ] && [ "$DISCOVERED_VOL" != "null" ]; then
-              VOLUME_ID=$(echo $DISCOVERED_VOL | jq -r .id)
+            if echo "$DISCOVERED_VOL" | jq -e '.id' >/dev/null 2>&1; then
+              VOLUME_ID=$(echo "$DISCOVERED_VOL" | jq -r .id)
               echo "Discovered volume ID: $VOLUME_ID"
             fi
           fi
 
           # 4. Fallback to fresh deployment
           echo "Fallback: Deploying new pod with volume $VOLUME_ID"
-          [ ! -z "$VOLUME_ID" ] && [ "$VOLUME_ID" != "null" ] && VOL_ARG="--network_volume_id $VOLUME_ID" || VOL_ARG=""
+          if [ ! -z "$VOLUME_ID" ] && [ "$VOLUME_ID" != "null" ]; then
+             VOL_ARG="--network_volume_id $VOLUME_ID"
+          else
+             VOL_ARG=""
+          fi
           
           PUB_KEY=$(cat ssh_key.pub)
           python run_challenge.py --json --count ${{ github.event.inputs.gpu_count }} \
