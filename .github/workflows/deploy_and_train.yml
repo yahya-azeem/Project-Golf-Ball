@@ -19,6 +19,11 @@ on:
         description: 'RunPod Cloud Type (SECURE, COMMUNITY, or blank to try both)'
         required: false
         default: ''
+      run_full_training:
+        description: 'Run 8xH100 Full Training?'
+        type: boolean
+        required: false
+        default: false
 
 jobs:
   smoke_test:
@@ -82,6 +87,7 @@ jobs:
   full_train:
     name: 🚀 Full Challenge (8xH100)
     needs: smoke_test
+    if: github.event.inputs.run_full_training == 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
