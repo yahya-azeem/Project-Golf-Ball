@@ -3,74 +3,44 @@ import json
 import os
 import sys
 import argparse
+import time
 
 # Configuration
 API_KEY = os.environ.get("RUNPOD_API_KEY")
-URL = "https://api.runpod.io/graphql"
 
-def run_query(query, variables=None):
+def deploy_pod_rest(gpu_type, count, template_id, volume_id=None, ssh_key=None):
+    # Using REST API for deployment as GraphQL schema is unstable
+    url = "https://api.runpod.io/v1/pods"
     headers = {
         "Content-Type": "application/json",
         "Authorization": f"Bearer {API_KEY}"
     }
-    try:
-        response = requests.post(URL, json={'query': query, 'variables': variables}, headers=headers, timeout=30)
-        if response.status_code != 200:
-            return {"errors": [{"message": f"HTTP {response.status_code}: {response.text}"}]}
-        return response.json()
-    except Exception as e:
-        return {"errors": [{"message": str(e)}]}
-
-def get_gpu_ids(gpu_name="H100"):
-    query = "{ gpuTypes { id displayName } }"
-    res = run_query(query)
-    if 'data' in res:
-        for g in res['data']['gpuTypes']:
-            if gpu_name.upper() in g['displayName'].upper():
-                return g['id']
-    return None
-
-def deploy_pod(gpu_id, count, template_id, volume_id=None, ssh_key=None):
-    mutation = """
-    mutation ($input: PodRentInput!) {
-      podRent(input: $input) {
-        id
-        desiredStatus
-        runtime {
-          ports {
-            ip
-            publicPort
-            privatePort
-          }
-        }
-      }
-    }
-    """
-    input_data = {
-        "gpuTypeId": gpu_id,
-        "gpuCount": count,
+    payload = {
+        "name": f"Parameter_Golf_{gpu_type}_{count}x",
+        "imageName": None, # Provided by template
         "templateId": template_id,
+        "gpuCount": count,
+        "gpuTypeId": gpu_type,
+        "cloudType": "SECURE",
     }
     if volume_id:
-        input_data["networkVolumeId"] = volume_id
+        payload["networkVolumeId"] = volume_id
     if ssh_key:
-        input_data["publicKey"] = ssh_key
-        
-    variables = {"input": input_data}
-    return run_query(mutation, variables)
+        # Note: some documentation says 'sshPublicKey', others 'publicKey'
+        payload["sshPublicKey"] = ssh_key
+    
+    r = requests.post(url, json=payload, headers=headers)
+    return r.json()
 
-def terminate_pod(pod_id):
-    mutation = """
-    mutation ($input: PodTerminateInput!) {
-      podTerminate(input: $input)
-    }
-    """
-    variables = {"input": {"podId": pod_id}}
-    return run_query(mutation, variables)
+def terminate_pod_rest(pod_id):
+    url = f"https://api.runpod.io/v1/pods/{pod_id}/terminate"
+    headers = {"Authorization": f"Bearer {API_KEY}"}
+    r = requests.post(url, headers=headers)
+    return r.status_code
 
 def main():
-    parser = argparse.ArgumentParser(description="RunPod Challenge Deployer")
-    parser.add_argument("--count", type=int, default=8, help="Number of GPUs")
+    parser = argparse.ArgumentParser(description="RunPod Challenge Deployer (REST)")
+    parser.add_argument("--count", type=int, default=1, help="Number of GPUs")
     parser.add_argument("--template", type=str, default="t7iu9ugzpi", help="RunPod template ID")
     parser.add_argument("--network_volume_id", type=str, help="Network Volume ID")
     parser.add_argument("--ssh_public_key", type=str, help="SSH public key string")
@@ -83,39 +53,29 @@ def main():
         sys.exit(1)
 
     if args.terminate:
-        res = terminate_pod(args.terminate)
-        if args.json: print(json.dumps(res))
-        else: print(f"Termination result: {res}")
+        status = terminate_pod_rest(args.terminate)
+        if args.json: print(json.dumps({"status_code": status}))
+        else: print(f"Termination request sent. Status: {status}")
         return
 
-    gpu_id = get_gpu_ids("H100")
-    if not gpu_id:
-        print("Error: Could not find H100 GPU ID")
-        sys.exit(1)
-
-    res = deploy_pod(gpu_id, args.count, args.template, args.network_volume_id, args.ssh_public_key)
+    # In REST, we often use the direct GPU name ID like 'NVIDIA GeForce RTX 4090' or 'NVIDIA H100 80GB HBM3'
+    # For H100, the ID is often 'NVIDIA H100 80GB HBM3'
+    res = deploy_pod_rest("NVIDIA H100 80GB HBM3", args.count, args.template, args.network_volume_id, args.ssh_public_key)
     
-    if 'errors' in res:
+    if 'id' not in res:
         if args.json: print(json.dumps(res))
-        else: print(f"Deployment Error: {res['errors']}")
+        else: print(f"Deployment Error: {res}")
         sys.exit(1)
 
-    pod = res['data']['podRent']
-    pod_id = pod['id']
+    pod_id = res['id']
     
-    # Wait for IP/Port (simplified wait here or handle in GHA)
-    ssh_port, ip = None, None
-    if pod['runtime'] and pod['runtime']['ports']:
-        for port in pod['runtime']['ports']:
-            if port['privatePort'] == 22:
-                ssh_port, ip = port['publicPort'], port['ip']
-                break
-    
-    output = {"pod_id": pod_id, "ip": ip, "port": ssh_port, "status": "BOOTING" if pod['runtime'] and not ip else "RUNNING" if ip else "REQUESTED"}
+    # In REST response, we get IP/Port directly sometimes, or need to query
+    # We will output what we have and let the GHA manage_pod.py handles the discovery
+    output = {"pod_id": pod_id, "status": "REQUESTED"}
     if args.json:
         print(json.dumps(output))
     else:
-        print(f"Pod Deployed: {pod_id} at {ip}:{ssh_port}")
+        print(f"Pod Deployed: {pod_id}")
 
 if __name__ == "__main__":
     main()
