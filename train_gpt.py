@@ -23,8 +23,20 @@ try:
     from flash_attn_interface import flash_attn_func as flash_attn_3_func
 except ImportError:
     def flash_attn_3_func(q, k, v, causal=True):
+        # Fallback for CPU/MPS or when flash_attn is missing
+        # Supports Grouped Query Attention (GQA) by broadcasting KV heads
         q = q * (q.size(-1)**-0.5)
-        q, k, v = q.transpose(1, 2), k.transpose(1, 2), v.transpose(1, 2)
+        # q: [B, T, H, D], k: [B, T, Hkv, D], v: [B, T, Hkv, D]
+        # Transpose to [B, H, T, D] for matmul
+        q = q.transpose(1, 2)
+        k = k.transpose(1, 2)
+        v = v.transpose(1, 2)
+        
+        # Broadcast k, v if num_heads != num_kv_heads
+        if q.size(1) != k.size(1):
+            k = k.repeat_interleave(q.size(1) // k.size(1), dim=1)
+            v = v.repeat_interleave(q.size(1) // v.size(1), dim=1)
+            
         attr = torch.matmul(q, k.transpose(-2, -1))
         if causal:
             mask = torch.triu(torch.ones(attr.size(-2), attr.size(-1), device=q.device), diagonal=1).bool()

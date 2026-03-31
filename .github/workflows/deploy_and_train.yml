@@ -1,134 +1,134 @@
-name: Deploy and Train (RunPod)
+name: Unified Train (RunPod)
 
 on:
   workflow_dispatch:
     inputs:
-      gpu_count_smoke:
-        description: 'GPUs for Smoke Test (typically 1)'
-        required: true
-        default: '1'
-      gpu_count_full:
-        description: 'GPUs for Full Test (typically 8)'
+      gpu_count:
+        description: 'GPUs to use (typically 8)'
         required: true
         default: '8'
-      template_id:
-        description: 'RunPod Template ID'
-        required: true
-        default: 't7iu9ugzpi'
-      cloud_type:
-        description: 'RunPod Cloud Type (SECURE, COMMUNITY, or blank to try both)'
-        required: false
-        default: ''
-      run_full_training:
-        description: 'Run 8xH100 Full Training?'
+      skip_cpu_test:
+        description: 'Skip CPU Validation?'
         type: boolean
         required: false
         default: false
 
 jobs:
-  smoke_test:
-    name: 🛡️ Smoke Test (1xH100)
+  validate_and_train:
+    name: 🚀 Validate & Train
     runs-on: ubuntu-latest
-    outputs:
-      pod_id: ${{ steps.deploy.outputs.pod_id }}
-      ip: ${{ steps.deploy.outputs.ip }}
-      port: ${{ steps.deploy.outputs.port }}
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
         with:
           python-version: '3.10'
-      - run: pip install requests
+          cache: 'pip'
 
-      - name: Deploy Smoke Pod
-        id: deploy
+      - name: Install dependencies
+        run: |
+          pip install requests numpy torch sentencepiece
+
+      - name: 🛡️ CPU Validation
+        if: github.event.inputs.skip_cpu_test != 'true'
+        run: |
+          python cpu_test.py
+
+      - name: 🛰️ Resume or Deploy RunPod
+        id: manage
         env:
           RUNPOD_API_KEY: ${{ secrets.RUNPOD_API_KEY }}
+          SECRET_POD_ID: ${{ secrets.RUNPOD_POD_ID }}
+          SECRET_VOLUME_ID: ${{ secrets.RUNPOD_NETWORK_VOLUME_ID }}
         run: |
-          CLOUD_ARG=""
-          if [ ! -z "${{ github.event.inputs.cloud_type }}" ]; then CLOUD_ARG="--cloud ${{ github.event.inputs.cloud_type }}"; fi
-          PUB_KEY=$(cat ssh_key.pub)
-          python run_challenge.py --json --count ${{ github.event.inputs.gpu_count_smoke }} --template ${{ github.event.inputs.template_id }} $CLOUD_ARG --ssh_public_key "$PUB_KEY" > result.json 2>&1 || (cat result.json && exit 1)
-          cat result.json
-          echo "pod_id=$(jq -r .pod_id result.json)" >> $GITHUB_OUTPUT
-          echo "ip=$(jq -r .ip result.json)" >> $GITHUB_OUTPUT
-          echo "port=$(jq -r .port result.json)" >> $GITHUB_OUTPUT
-
-      - name: Setup SSH
-        run: |
-          mkdir -p ~/.ssh
-          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_ed25519
-          chmod 600 ~/.ssh/id_ed25519
-          ssh-keyscan -p ${{ steps.deploy.outputs.port }} ${{ steps.deploy.outputs.ip }} >> ~/.ssh/known_hosts
-
-      - name: Run Smoke Test on Pod
-        run: |
-          ssh -i ~/.ssh/id_ed25519 root@${{ steps.deploy.outputs.ip }} -p ${{ steps.deploy.outputs.port }} "bash -c '
-            pip install --break-system-packages sentencepiece huggingface_hub && \
-            pip install --break-system-packages https://github.com/Dao-AILab/flash-attention/releases/download/v2.8.3/flash_attn-2.8.3+cu12torch2.4cxx11abiFALSE-cp312-cp312-linux_x86_64.whl && \
-            cd /workspace && \
-            git clone -b main https://github.com/${{ github.repository }}.git project_golf && \
-            cd /workspace && git clone https://github.com/openai/parameter-golf.git && \
-            cp project_golf/train_gpt.py parameter-golf/train_gpt.py && \
-            cd parameter-golf && \
-            python3 data/cached_challenge_fineweb.py --variant sp1024 --train-shards 1 && \
-            USE_COMPILE=0 SKIP_INIT_VAL=1 ITERATIONS=50 TRAIN_LOG_EVERY=10 python3 train_gpt.py
-          '"
-
-      - name: Terminate Smoke Pod
-        if: always()
-        env:
-          RUNPOD_API_KEY: ${{ secrets.RUNPOD_API_KEY }}
-        run: |
-          if [ ! -z "${{ steps.deploy.outputs.pod_id }}" ]; then
-            python run_challenge.py --terminate ${{ steps.deploy.outputs.pod_id }}
+          # 1. Determine Pod ID (Secret or Discovery)
+          POD_ID="$SECRET_POD_ID"
+          if [ -z "$POD_ID" ] || [ "$POD_ID" == "null" ]; then
+            echo "Searching for existing 8xH100 pod..."
+            DISCOVERED_POD=$(python manage_pod.py --find-pod --gpu_count ${{ github.event.inputs.gpu_count }} --json 2>/dev/null)
+            if [ $? -eq 0 ]; then
+              POD_ID=$(echo $DISCOVERED_POD | jq -r .id)
+              echo "Discovered pod: $POD_ID"
+            fi
           fi
 
-  full_train:
-    name: 🚀 Full Challenge (8xH100)
-    needs: smoke_test
-    if: github.event.inputs.run_full_training == 'true'
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.10'
-      - run: pip install requests
+          # 2. Try Resuming
+          if [ ! -z "$POD_ID" ] && [ "$POD_ID" != "null" ]; then
+            echo "Attempting to resume pod: $POD_ID"
+            if python manage_pod.py --resume "$POD_ID" --gpu_count ${{ github.event.inputs.gpu_count }} --json > pod_info.json 2>/dev/null; then
+              echo "Successfully resumed pod."
+              echo "was_resumed=true" >> $GITHUB_OUTPUT
+              cat pod_info.json
+              echo "pod_id=$(jq -r .pod_id pod_info.json)" >> $GITHUB_OUTPUT
+              echo "ip=$(jq -r .ip pod_info.json)" >> $GITHUB_OUTPUT
+              echo "port=$(jq -r .port pod_info.json)" >> $GITHUB_OUTPUT
+              exit 0
+            fi
+          fi
 
-      - name: Deploy Full Pod
-        id: deploy
-        env:
-          RUNPOD_API_KEY: ${{ secrets.RUNPOD_API_KEY }}
-        run: |
-          CLOUD_ARG=""
-          if [ ! -z "${{ github.event.inputs.cloud_type }}" ]; then CLOUD_ARG="--cloud ${{ github.event.inputs.cloud_type }}"; fi
+          # 3. Determine Volume ID (Secret or Discovery)
+          VOLUME_ID="$SECRET_VOLUME_ID"
+          if [ -z "$VOLUME_ID" ] || [ "$VOLUME_ID" == "null" ]; then
+            echo "Searching for 30GB network volume..."
+            DISCOVERED_VOL=$(python manage_pod.py --find-volume --json 2>/dev/null)
+            if [ $? -eq 0 ]; then
+              VOLUME_ID=$(echo $DISCOVERED_VOL | jq -r .id)
+              echo "Discovered volume: $VOLUME_ID"
+            fi
+          fi
+
+          # 4. Fallback to fresh deployment
+          echo "Fallback: Deploying new pod"
+          [ ! -z "$VOLUME_ID" ] && VOL_ARG="--network_volume_id $VOLUME_ID" || VOL_ARG=""
+          
           PUB_KEY=$(cat ssh_key.pub)
-          python run_challenge.py --json --count ${{ github.event.inputs.gpu_count_full }} --template ${{ github.event.inputs.template_id }} $CLOUD_ARG --ssh_public_key "$PUB_KEY" > result.json 2>&1 || (cat result.json && exit 1)
-          cat result.json
-          echo "pod_id=$(jq -r .pod_id result.json)" >> $GITHUB_OUTPUT
-          echo "ip=$(jq -r .ip result.json)" >> $GITHUB_OUTPUT
-          echo "port=$(jq -r .port result.json)" >> $GITHUB_OUTPUT
+          python run_challenge.py --json --count ${{ github.event.inputs.gpu_count }} \
+            --template t7iu9ugzpi \
+            --ssh_public_key "$PUB_KEY" \
+            $VOL_ARG > pod_info.json 2>&1 || (cat pod_info.json && exit 1)
+          
+          echo "was_resumed=false" >> $GITHUB_OUTPUT
+          cat pod_info.json
+          echo "pod_id=$(jq -r .pod_id pod_info.json)" >> $GITHUB_OUTPUT
+          echo "ip=$(jq -r .ip pod_info.json)" >> $GITHUB_OUTPUT
+          echo "port=$(jq -r .port pod_info.json)" >> $GITHUB_OUTPUT
 
       - name: Setup SSH
         run: |
           mkdir -p ~/.ssh
           echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_ed25519
           chmod 600 ~/.ssh/id_ed25519
-          ssh-keyscan -p ${{ steps.deploy.outputs.port }} ${{ steps.deploy.outputs.ip }} >> ~/.ssh/known_hosts
+          ssh-keyscan -p ${{ steps.manage.outputs.port }} ${{ steps.manage.outputs.ip }} >> ~/.ssh/known_hosts
 
-      - name: Run Full Training on Pod
+      - name: 🏋️ Training on Pod
         run: |
-          ssh -i ~/.ssh/id_ed25519 root@${{ steps.deploy.outputs.ip }} -p ${{ steps.deploy.outputs.port }} "bash -c '
-            pip install --break-system-packages sentencepiece huggingface_hub && \
-            pip install --break-system-packages https://github.com/Dao-AILab/flash-attention/releases/download/v2.8.3/flash_attn-2.8.3+cu12torch2.4cxx11abiFALSE-cp312-cp312-linux_x86_64.whl && \
+          ssh -i ~/.ssh/id_ed25519 root@${{ steps.manage.outputs.ip }} -p ${{ steps.manage.outputs.port }} "bash -c '
             cd /workspace && \
-            git clone -b main https://github.com/${{ github.repository }}.git project_golf && \
-            cd /workspace && git clone https://github.com/openai/parameter-golf.git && \
+            # Clone or update the project repository
+            if [ ! -d \"project_golf\" ]; then
+              git clone -b main https://github.com/${{ github.repository }}.git project_golf;
+            else
+              cd project_golf && git fetch origin && git reset --hard origin/main && cd ..;
+            fi && \
+            # Check for existing dependencies
+            if ! python3 -c \"import flash_attn\" 2>/dev/null; then
+              echo \"Installing heavy dependencies...\" && \
+              pip install --break-system-packages sentencepiece huggingface_hub && \
+              pip install --break-system-packages https://github.com/Dao-AILab/flash-attention/releases/download/v2.8.3/flash_attn-2.8.3+cu12torch2.4cxx11abiFALSE-cp312-cp312-linux_x86_64.whl;
+            else
+              echo \"Dependencies found, skipping installation.\";
+            fi && \
+            # Setup OpenAI Challenge structure
+            if [ ! -d \"parameter-golf\" ]; then
+              git clone https://github.com/openai/parameter-golf.git;
+            fi && \
             cp project_golf/train_gpt.py parameter-golf/train_gpt.py && \
             cd parameter-golf && \
+            # Run dataset preparation
             python3 data/cached_challenge_fineweb.py --variant sp1024 && \
-            torchrun --standalone --nproc_per_node=${{ github.event.inputs.gpu_count_full }} train_gpt.py
+            # Execute Training
+            torchrun --standalone --nproc_per_node=${{ github.event.inputs.gpu_count }} train_gpt.py
           '" > train.log 2>&1
           cat train.log
 
@@ -142,8 +142,8 @@ jobs:
 
       - name: Collect Artifacts
         run: |
-          scp -i ~/.ssh/id_ed25519 -P ${{ steps.deploy.outputs.port }} root@${{ steps.deploy.outputs.ip }}:/workspace/parameter-golf/final_model.ptz ./final_model.ptz
-          scp -i ~/.ssh/id_ed25519 -P ${{ steps.deploy.outputs.port }} root@${{ steps.deploy.outputs.ip }}:/workspace/parameter-golf/data/tokenizers/fineweb_1024_bpe.model ./fineweb_1024_bpe.model
+          scp -i ~/.ssh/id_ed25519 -P ${{ steps.manage.outputs.port }} root@${{ steps.manage.outputs.ip }}:/workspace/parameter-golf/final_model.ptz ./final_model.ptz
+          scp -i ~/.ssh/id_ed25519 -P ${{ steps.manage.outputs.port }} root@${{ steps.manage.outputs.ip }}:/workspace/parameter-golf/data/tokenizers/fineweb_1024_bpe.model ./fineweb_1024_bpe.model
 
       - name: Upload Artifacts
         uses: actions/upload-artifact@v4
@@ -153,11 +153,17 @@ jobs:
             final_model.ptz
             fineweb_1024_bpe.model
 
-      - name: Terminate Full Pod
+      - name: 💤 Cleanup (Stop/Terminate)
         if: always()
         env:
           RUNPOD_API_KEY: ${{ secrets.RUNPOD_API_KEY }}
         run: |
-          if [ ! -z "${{ steps.deploy.outputs.pod_id }}" ]; then
-            python run_challenge.py --terminate ${{ steps.deploy.outputs.pod_id }}
+          POD_ID="${{ steps.manage.outputs.pod_id }}"
+          if [ "${{ steps.manage.outputs.was_resumed }}" == "true" ]; then
+            echo "Stopping (pausing) resumed pod: $POD_ID"
+            python manage_pod.py --stop "$POD_ID"
+          else
+            echo "Terminating newly created pod: $POD_ID"
+            python run_challenge.py --terminate "$POD_ID"
           fi
+
