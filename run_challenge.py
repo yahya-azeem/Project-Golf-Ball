@@ -50,10 +50,12 @@ def deploy_pod(gpu_id, count=1, template_id="t7iu9ugzpi", cloud="SECURE", ssh_pu
         "cloudType": cloud,
         "templateId": template_id,
         "containerDiskInGb": 50,
-        "volumeInGb": 50
+        "volumeInGb": 50,
+        "startSsh": True,
+        "env": []
     }
     if ssh_public_key:
-        input_data["sshPublicKey"] = ssh_public_key
+        input_data["env"].append({"key": "PUBLIC_KEY", "value": ssh_public_key})
         
     variables = {"input": input_data}
     res = run_query(mutation, variables)
