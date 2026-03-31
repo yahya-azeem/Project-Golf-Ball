@@ -109,14 +109,17 @@ def main():
         else:
             print("H100 not found.")
         sys.exit(1)
-    # ...
+
+    pod_data = deploy_pod(gpu_id, count=args.count, template_id=args.template)
     if not pod_data or isinstance(pod_data, dict) and 'errors' in pod_data:
         if args.json:
             print(json.dumps({"error": "Failed to deploy", "details": pod_data.get('errors') if pod_data else "Unknown"}))
         else:
             print(f"Failed to deploy: {pod_data.get('errors') if pod_data else 'Unknown'}")
         sys.exit(1)
-    # ...
+
+    pod_id = pod_data['id']
+    pod = wait_for_pod(pod_id)
     if not pod:
         if args.json:
             print(json.dumps({"error": "Pod failed to start", "pod_id": pod_id}))
