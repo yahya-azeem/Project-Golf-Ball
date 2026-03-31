@@ -4,9 +4,9 @@ on:
   workflow_dispatch:
     inputs:
       gpu_count:
-        description: 'GPUs to use (typically 8)'
+        description: 'GPUs to use (1 for test, 8 for full training)'
         required: true
-        default: '8'
+        default: '1'
       skip_cpu_test:
         description: 'Skip CPU Validation?'
         type: boolean
@@ -103,22 +103,23 @@ jobs:
       - name: 🏋️ Training on Pod
         run: |
           ssh -i ~/.ssh/id_ed25519 root@${{ steps.manage.outputs.ip }} -p ${{ steps.manage.outputs.port }} "bash -c '
-            cd /workspace && \
+            mkdir -p /workspace && cd /workspace && \
             # Clone or update the project repository
             if [ ! -d \"project_golf\" ]; then
               git clone -b main https://github.com/${{ github.repository }}.git project_golf;
             else
               cd project_golf && git fetch origin && git reset --hard origin/main && cd ..;
             fi && \
-            # Check for existing dependencies
+            cd project_golf && \
+            # Check for existing dependencies (only minimal ones if missing)
             if ! python3 -c \"import flash_attn\" 2>/dev/null; then
-              echo \"Installing heavy dependencies...\" && \
-              pip install --break-system-packages sentencepiece huggingface_hub && \
-              pip install --break-system-packages https://github.com/Dao-AILab/flash-attention/releases/download/v2.8.3/flash_attn-2.8.3+cu12torch2.4cxx11abiFALSE-cp312-cp312-linux_x86_64.whl;
+              echo \"Check for missing dependencies...\" && \
+              pip install --break-system-packages wandb || true;
             else
-              echo \"Dependencies found, skipping installation.\";
+              echo \"Primary dependencies found in template, skipping installation.\";
             fi && \
-            # Setup OpenAI Challenge structure
+            # Setup OpenAI Challenge structure inside workspace
+            cd /workspace && \
             if [ ! -d \"parameter-golf\" ]; then
               git clone https://github.com/openai/parameter-golf.git;
             fi && \
@@ -140,9 +141,10 @@ jobs:
           echo "- **Artifact Size**: $SIZE bytes" >> $GITHUB_STEP_SUMMARY
 
       - name: Collect Artifacts
+        if: always()
         run: |
-          scp -i ~/.ssh/id_ed25519 -P ${{ steps.manage.outputs.port }} root@${{ steps.manage.outputs.ip }}:/workspace/parameter-golf/final_model.ptz ./final_model.ptz
-          scp -i ~/.ssh/id_ed25519 -P ${{ steps.manage.outputs.port }} root@${{ steps.manage.outputs.ip }}:/workspace/parameter-golf/data/tokenizers/fineweb_1024_bpe.model ./fineweb_1024_bpe.model
+          scp -i ~/.ssh/id_ed25519 -P ${{ steps.manage.outputs.port }} root@${{ steps.manage.outputs.ip }}:/workspace/parameter-golf/final_model.ptz ./final_model.ptz || true
+          scp -i ~/.ssh/id_ed25519 -P ${{ steps.manage.outputs.port }} root@${{ steps.manage.outputs.ip }}:/workspace/parameter-golf/data/tokenizers/fineweb_1024_bpe.model ./fineweb_1024_bpe.model || true
 
       - name: Upload Artifacts
         uses: actions/upload-artifact@v4
