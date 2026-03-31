@@ -74,12 +74,6 @@ def get_all_resources():
           name
           gpuCount
         }
-        networkVolumes {
-          id
-          name
-          size
-          dataCenterId
-        }
       }
     }
     """
@@ -109,7 +103,7 @@ def find_volume(target_size=30):
     if 'data' not in res or 'myself' not in res['data']:
         return None
     
-    volumes = res['data']['myself']['networkVolumes']
+    volumes = res['data']['myself'].get('networkVolumes', [])
     for vol in volumes:
         if vol['size'] == target_size:
             return vol
