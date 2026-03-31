@@ -32,8 +32,8 @@ def get_gpu_ids(gpu_name="H100"):
 
 def deploy_pod(gpu_id, count, template_id, volume_id=None, ssh_key=None):
     mutation = """
-    mutation ($input: PodCreateInput!) {
-      podFindAndDeployOnDemand(input: $input) {
+    mutation ($input: PodRentInput!) {
+      podRent(input: $input) {
         id
         desiredStatus
         runtime {
@@ -100,7 +100,7 @@ def main():
         else: print(f"Deployment Error: {res['errors']}")
         sys.exit(1)
 
-    pod = res['data']['podFindAndDeployOnDemand']
+    pod = res['data']['podRent']
     pod_id = pod['id']
     
     # Wait for IP/Port (simplified wait here or handle in GHA)
