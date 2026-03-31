@@ -10,7 +10,7 @@ API_KEY = os.environ.get("RUNPOD_API_KEY")
 
 def deploy_pod_rest(gpu_type, count, template_id, volume_id=None, ssh_key=None):
     # Using REST API for deployment as GraphQL schema is unstable
-    url = "https://api.runpod.io/v1/pods"
+    url = "https://rest.runpod.io/v1/pods"
     headers = {
         "Content-Type": "application/json",
         "Authorization": f"Bearer {API_KEY}"
@@ -33,7 +33,7 @@ def deploy_pod_rest(gpu_type, count, template_id, volume_id=None, ssh_key=None):
     return r.json()
 
 def terminate_pod_rest(pod_id):
-    url = f"https://api.runpod.io/v1/pods/{pod_id}/terminate"
+    url = f"https://rest.runpod.io/v1/pods/{pod_id}/terminate"
     headers = {"Authorization": f"Bearer {API_KEY}"}
     r = requests.post(url, headers=headers)
     return r.status_code
@@ -58,8 +58,7 @@ def main():
         else: print(f"Termination request sent. Status: {status}")
         return
 
-    # In REST, we often use the direct GPU name ID like 'NVIDIA GeForce RTX 4090' or 'NVIDIA H100 80GB HBM3'
-    # For H100, the ID is often 'NVIDIA H100 80GB HBM3'
+    # In REST, the ID for H100 is often 'NVIDIA H100 80GB HBM3'
     res = deploy_pod_rest("NVIDIA H100 80GB HBM3", args.count, args.template, args.network_volume_id, args.ssh_public_key)
     
     if 'id' not in res:

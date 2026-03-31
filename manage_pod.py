@@ -8,7 +8,7 @@ import argparse
 # Configuration
 API_KEY = os.environ.get("RUNPOD_API_KEY")
 GRAPHQL_URL = "https://api.runpod.io/graphql"
-REST_URL = "https://api.runpod.io/v1/pods"
+REST_URL = "https://rest.runpod.io/v1/pods"
 
 def run_graphql_query(query, variables=None):
     headers = {
