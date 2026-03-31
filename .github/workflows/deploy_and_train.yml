@@ -42,21 +42,23 @@ jobs:
           SECRET_POD_ID: ${{ secrets.RUNPOD_POD_ID }}
           SECRET_VOLUME_ID: ${{ secrets.RUNPOD_NETWORK_VOLUME_ID }}
         run: |
+          set -x
           # 1. Determine Pod ID (Secret or Discovery)
           POD_ID="$SECRET_POD_ID"
           if [ -z "$POD_ID" ] || [ "$POD_ID" == "null" ]; then
             echo "Searching for existing 8xH100 pod..."
-            DISCOVERED_POD=$(python manage_pod.py --find-pod --gpu_count ${{ github.event.inputs.gpu_count }} --json 2>/dev/null)
-            if [ $? -eq 0 ]; then
+            DISCOVERED_POD=$(python manage_pod.py --find-pod --gpu_count ${{ github.event.inputs.gpu_count }} --json)
+            echo "Discovery result: $DISCOVERED_POD"
+            if [ $? -eq 0 ] && [ "$DISCOVERED_POD" != "null" ]; then
               POD_ID=$(echo $DISCOVERED_POD | jq -r .id)
-              echo "Discovered pod: $POD_ID"
+              echo "Discovered pod ID: $POD_ID"
             fi
           fi
 
           # 2. Try Resuming
           if [ ! -z "$POD_ID" ] && [ "$POD_ID" != "null" ]; then
             echo "Attempting to resume pod: $POD_ID"
-            if python manage_pod.py --resume "$POD_ID" --gpu_count ${{ github.event.inputs.gpu_count }} --json > pod_info.json 2>/dev/null; then
+            if python manage_pod.py --resume "$POD_ID" --gpu_count ${{ github.event.inputs.gpu_count }} --json > pod_info.json; then
               echo "Successfully resumed pod."
               echo "was_resumed=true" >> $GITHUB_OUTPUT
               cat pod_info.json
@@ -65,22 +67,24 @@ jobs:
               echo "port=$(jq -r .port pod_info.json)" >> $GITHUB_OUTPUT
               exit 0
             fi
+            echo "Resume failed, falling back to discovery/deploy."
           fi
 
           # 3. Determine Volume ID (Secret or Discovery)
           VOLUME_ID="$SECRET_VOLUME_ID"
           if [ -z "$VOLUME_ID" ] || [ "$VOLUME_ID" == "null" ]; then
             echo "Searching for 30GB network volume..."
-            DISCOVERED_VOL=$(python manage_pod.py --find-volume --json 2>/dev/null)
-            if [ $? -eq 0 ]; then
+            DISCOVERED_VOL=$(python manage_pod.py --find-volume --json)
+            echo "Volume discovery result: $DISCOVERED_VOL"
+            if [ $? -eq 0 ] && [ "$DISCOVERED_VOL" != "null" ]; then
               VOLUME_ID=$(echo $DISCOVERED_VOL | jq -r .id)
-              echo "Discovered volume: $VOLUME_ID"
+              echo "Discovered volume ID: $VOLUME_ID"
             fi
           fi
 
           # 4. Fallback to fresh deployment
-          echo "Fallback: Deploying new pod"
-          [ ! -z "$VOLUME_ID" ] && VOL_ARG="--network_volume_id $VOLUME_ID" || VOL_ARG=""
+          echo "Fallback: Deploying new pod with volume $VOLUME_ID"
+          [ ! -z "$VOLUME_ID" ] && [ "$VOLUME_ID" != "null" ] && VOL_ARG="--network_volume_id $VOLUME_ID" || VOL_ARG=""
           
           PUB_KEY=$(cat ssh_key.pub)
           python run_challenge.py --json --count ${{ github.event.inputs.gpu_count }} \
