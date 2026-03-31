@@ -53,7 +53,7 @@ jobs:
           ssh -i ~/.ssh/id_ed25519 root@${{ steps.deploy.outputs.ip }} -p ${{ steps.deploy.outputs.port }} "bash -c '
             pip install --break-system-packages sentencepiece huggingface_hub flash-attn && \
             cd /workspace && \
-            git clone -b fix-train-gpt https://github.com/${{ github.repository }}.git project_golf && \
+            git clone -b main https://github.com/${{ github.repository }}.git project_golf && \
             cd /workspace && git clone https://github.com/openai/parameter-golf.git && \
             cp project_golf/train_gpt.py parameter-golf/train_gpt.py && \
             cd parameter-golf && \
@@ -103,7 +103,7 @@ jobs:
           ssh -i ~/.ssh/id_ed25519 root@${{ steps.deploy.outputs.ip }} -p ${{ steps.deploy.outputs.port }} "bash -c '
             pip install --break-system-packages sentencepiece huggingface_hub flash-attn && \
             cd /workspace && \
-            git clone -b fix-train-gpt https://github.com/${{ github.repository }}.git project_golf && \
+            git clone -b main https://github.com/${{ github.repository }}.git project_golf && \
             cd /workspace && git clone https://github.com/openai/parameter-golf.git && \
             cp project_golf/train_gpt.py parameter-golf/train_gpt.py && \
             cd parameter-golf && \
