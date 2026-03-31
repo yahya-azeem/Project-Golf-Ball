@@ -21,7 +21,7 @@ def run_query(query, variables=None):
         "Authorization": f"Bearer {API_KEY}"
     }
     try:
-        response = requests.post(URL, json={'query': query, 'variables': variables}, headers=headers)
+        response = requests.post(URL, json={'query': query, 'variables': variables}, headers=headers, timeout=30)
         if response.status_code != 200:
             print(f"DEBUG: HTTP Error {response.status_code}: {response.text}")
             return {"errors": [{"message": f"HTTP {response.status_code}: {response.text}"}]}

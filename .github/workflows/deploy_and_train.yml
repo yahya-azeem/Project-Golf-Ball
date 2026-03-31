@@ -159,7 +159,14 @@ jobs:
           RUNPOD_API_KEY: ${{ secrets.RUNPOD_API_KEY }}
         run: |
           POD_ID="${{ steps.manage.outputs.pod_id }}"
-          if [ "${{ steps.manage.outputs.was_resumed }}" == "true" ]; then
+          WAS_RESUMED="${{ steps.manage.outputs.was_resumed }}"
+          
+          if [ -z "$POD_ID" ] || [ "$POD_ID" == "null" ]; then
+            echo "No Pod ID found to cleanup."
+            exit 0
+          fi
+
+          if [ "$WAS_RESUMED" == "true" ]; then
             echo "Stopping (pausing) resumed pod: $POD_ID"
             python manage_pod.py --stop "$POD_ID"
           else
