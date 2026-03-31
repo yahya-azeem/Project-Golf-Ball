@@ -81,7 +81,6 @@ def get_all_resources():
           name
           runtime { status }
           gpuCount
-          machine { gpuDisplayName }
         }
         networkVolumes {
           id
@@ -97,6 +96,7 @@ def get_all_resources():
 def find_pod(gpu_type="H100", count=8):
     res = get_all_resources()
     if 'data' not in res or 'myself' not in res['data']:
+        print(f"DEBUG: Resource query failed or returned no data: {res}")
         return None
     
     pods = res['data']['myself']['pods']
@@ -104,11 +104,16 @@ def find_pod(gpu_type="H100", count=8):
     for status in ['PAUSED', 'RUNNING']:
         for pod in pods:
             if pod['gpuCount'] == count and status == pod['runtime']['status']:
-                # Check for "H100" in machine name or pod name
-                gpu_name = pod.get('machine', {}).get('gpuDisplayName', '').upper()
+                # Filter by name if gpu_type is specified
                 pod_name = pod.get('name', '').upper()
-                if gpu_type.upper() in gpu_name or gpu_type.upper() in pod_name:
+                if not gpu_type or gpu_type.upper() in pod_name:
                     return pod
+    
+    # Second pass: just count if no name match
+    for status in ['PAUSED', 'RUNNING']:
+        for pod in pods:
+            if pod['gpuCount'] == count and status == pod['runtime']['status']:
+                return pod
     return None
 
 def find_volume(target_size=30):
