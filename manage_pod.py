@@ -65,13 +65,13 @@ def get_pod_info(pod_id):
     return run_query(query, {"podId": pod_id})
 
 def get_all_resources():
+    # Only standard fields to ensure validation passes
     query = """
     query {
       myself {
         pods {
           id
           name
-          runtime { uptime }
           gpuCount
         }
         networkVolumes {
@@ -91,14 +91,14 @@ def find_pod(gpu_type="H100", count=8):
         return None
     
     pods = res['data']['myself']['pods']
-    # Prioritize based on name and gpuCount for now
+    # Filter by name and gpuCount
     for pod in pods:
         if pod['gpuCount'] == count:
             pod_name = pod.get('name', '').upper()
             if not gpu_type or gpu_type.upper() in pod_name:
                 return pod
     
-    # Second pass: just count
+    # Generic count match
     for pod in pods:
         if pod['gpuCount'] == count:
             return pod
@@ -131,34 +131,31 @@ def main():
     parser.add_argument("--resume", help="Pod ID to resume")
     parser.add_argument("--stop", help="Pod ID to stop")
     parser.add_argument("--info", help="Pod ID to get IP/SSH Port")
-    parser.add_argument("--find-pod", action="store_true", help="Find an existing 8xH100 pod")
-    parser.add_argument("--find-volume", action="store_true", help="Find a 30GB network volume")
-    parser.add_argument("--gpu_count", type=int, default=8, help="GPU count for resuming/finding")
+    parser.add_argument("--find-pod", action="store_true", help="Find an existing pod")
+    parser.add_argument("--find-volume", action="store_true", help="Find a network volume")
+    parser.add_argument("--gpu_count", type=int, default=8, help="GPU count")
     parser.add_argument("--json", action="store_true", help="Output JSON only")
     args = parser.parse_args()
 
     if not API_KEY:
-        print("Error: RUNPOD_API_KEY environment variable not set.")
         sys.exit(1)
 
     if args.find_pod:
         pod = find_pod(count=args.gpu_count)
         if pod:
             if args.json: print(json.dumps(pod))
-            else: print(f"Found pod: {pod['id']} ({pod['name']})")
+            else: print(f"Found pod: {pod['id']}")
         else:
             if args.json: print(json.dumps({"error": "No matching pod found"}))
-            else: print("No matching pod found.")
             sys.exit(1)
 
     elif args.find_volume:
         vol = find_volume()
         if vol:
             if args.json: print(json.dumps(vol))
-            else: print(f"Found volume: {vol['id']} ({vol['name']}) - {vol['size']}GB")
+            else: print(f"Found volume: {vol['id']}")
         else:
             if args.json: print(json.dumps({"error": "No matching volume found"}))
-            else: print("No matching volume found.")
             sys.exit(1)
 
     elif args.resume:
@@ -166,14 +163,11 @@ def main():
         if not pod_id or pod_id == "null":
             pod = find_pod(count=args.gpu_count)
             if pod: pod_id = pod['id']
-            else:
-                print("Error: Could not find a suitable pod to resume.")
-                sys.exit(1)
+            else: sys.exit(1)
 
         res = resume_pod(pod_id, args.gpu_count)
         if 'errors' in res:
             if args.json: print(json.dumps(res))
-            else: print(f"Error resuming pod: {res['errors']}")
             sys.exit(1)
             
         pod = wait_for_pod(pod_id)
@@ -185,9 +179,7 @@ def main():
                     break
             result = {"pod_id": pod_id, "ip": ip, "port": ssh_port, "status": "RUNNING", "was_resumed": True}
             if args.json: print(json.dumps(result))
-            else: print(f"Pod is RUNNING at {ip}:{ssh_port}")
         else:
-            print("Timed out waiting for pod to start.")
             sys.exit(1)
 
     elif args.stop:
@@ -195,18 +187,14 @@ def main():
         if not pod_id or pod_id == "null":
             pod = find_pod(count=args.gpu_count)
             if pod: pod_id = pod['id']
-            else:
-                print("Error: Could not find pod to stop.")
-                sys.exit(1)
+            else: sys.exit(1)
 
         res = stop_pod(pod_id)
         if args.json: print(json.dumps(res))
-        else: print(f"Stop requested: {res}")
 
     elif args.info:
         pod = get_pod_info(args.info)
         if args.json: print(json.dumps(pod))
-        else: print(pod)
 
     else:
         parser.print_help()
