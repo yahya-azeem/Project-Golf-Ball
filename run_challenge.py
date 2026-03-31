@@ -37,7 +37,6 @@ def deploy_pod(gpu_id, count, template_id, volume_id=None, ssh_key=None):
         id
         desiredStatus
         runtime {
-          status
           ports {
             ip
             publicPort
@@ -112,7 +111,7 @@ def main():
                 ssh_port, ip = port['publicPort'], port['ip']
                 break
     
-    output = {"pod_id": pod_id, "ip": ip, "port": ssh_port, "status": pod['runtime']['status'] if pod['runtime'] else 'REQUESTED'}
+    output = {"pod_id": pod_id, "ip": ip, "port": ssh_port, "status": "BOOTING" if pod['runtime'] and not ip else "RUNNING" if ip else "REQUESTED"}
     if args.json:
         print(json.dumps(output))
     else:
