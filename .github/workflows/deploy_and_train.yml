@@ -36,11 +36,11 @@ jobs:
         env:
           RUNPOD_API_KEY: ${{ secrets.RUNPOD_API_KEY }}
         run: |
-          RESULT=$(python run_challenge.py --json --count ${{ github.event.inputs.gpu_count_smoke }} --template ${{ github.event.inputs.template_id }})
-          echo "Raw Result: $RESULT"
-          echo "pod_id=$(echo $RESULT | jq -r .pod_id)" >> $GITHUB_OUTPUT
-          echo "ip=$(echo $RESULT | jq -r .ip)" >> $GITHUB_OUTPUT
-          echo "port=$(echo $RESULT | jq -r .port)" >> $GITHUB_OUTPUT
+          python run_challenge.py --json --count ${{ github.event.inputs.gpu_count_smoke }} --template ${{ github.event.inputs.template_id }} > result.json
+          cat result.json
+          echo "pod_id=$(jq -r .pod_id result.json)" >> $GITHUB_OUTPUT
+          echo "ip=$(jq -r .ip result.json)" >> $GITHUB_OUTPUT
+          echo "port=$(jq -r .port result.json)" >> $GITHUB_OUTPUT
 
       - name: Setup SSH
         run: |
@@ -87,11 +87,11 @@ jobs:
         env:
           RUNPOD_API_KEY: ${{ secrets.RUNPOD_API_KEY }}
         run: |
-          RESULT=$(python run_challenge.py --json --count ${{ github.event.inputs.gpu_count_full }} --template ${{ github.event.inputs.template_id }})
-          echo "Raw Result: $RESULT"
-          echo "pod_id=$(echo $RESULT | jq -r .pod_id)" >> $GITHUB_OUTPUT
-          echo "ip=$(echo $RESULT | jq -r .ip)" >> $GITHUB_OUTPUT
-          echo "port=$(echo $RESULT | jq -r .port)" >> $GITHUB_OUTPUT
+          python run_challenge.py --json --count ${{ github.event.inputs.gpu_count_full }} --template ${{ github.event.inputs.template_id }} > result.json
+          cat result.json
+          echo "pod_id=$(jq -r .pod_id result.json)" >> $GITHUB_OUTPUT
+          echo "ip=$(jq -r .ip result.json)" >> $GITHUB_OUTPUT
+          echo "port=$(jq -r .port result.json)" >> $GITHUB_OUTPUT
 
       - name: Setup SSH
         run: |
