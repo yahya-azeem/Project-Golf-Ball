@@ -36,7 +36,7 @@ jobs:
         env:
           RUNPOD_API_KEY: ${{ secrets.RUNPOD_API_KEY }}
         run: |
-          python run_challenge.py --json --count ${{ github.event.inputs.gpu_count_smoke }} --template ${{ github.event.inputs.template_id }} > result.json
+          python run_challenge.py --json --count ${{ github.event.inputs.gpu_count_smoke }} --template ${{ github.event.inputs.template_id }} > result.json 2>&1 || (cat result.json && exit 1)
           cat result.json
           echo "pod_id=$(jq -r .pod_id result.json)" >> $GITHUB_OUTPUT
           echo "ip=$(jq -r .ip result.json)" >> $GITHUB_OUTPUT
@@ -87,7 +87,7 @@ jobs:
         env:
           RUNPOD_API_KEY: ${{ secrets.RUNPOD_API_KEY }}
         run: |
-          python run_challenge.py --json --count ${{ github.event.inputs.gpu_count_full }} --template ${{ github.event.inputs.template_id }} > result.json
+          python run_challenge.py --json --count ${{ github.event.inputs.gpu_count_full }} --template ${{ github.event.inputs.template_id }} > result.json 2>&1 || (cat result.json && exit 1)
           cat result.json
           echo "pod_id=$(jq -r .pod_id result.json)" >> $GITHUB_OUTPUT
           echo "ip=$(jq -r .ip result.json)" >> $GITHUB_OUTPUT
