@@ -33,6 +33,16 @@ def stop_pod_rest(pod_id):
     r = requests.post(url, headers=headers)
     return r.json()
 
+def terminate_pod_rest(pod_id):
+    url = f"{REST_URL}/{pod_id}"
+    headers = {"Authorization": f"Bearer {API_KEY}"}
+    r = requests.delete(url, headers=headers)
+    # REST API for DELETE usually returns status 204 or a small JSON
+    try:
+        return r.json()
+    except:
+        return {"status": r.status_code}
+
 def get_pod_info(pod_id):
     query = """
     query ($podId: String!) {
@@ -85,6 +95,7 @@ def main():
     parser = argparse.ArgumentParser(description="Manage RunPod pod lifecycle (REST).")
     parser.add_argument("--resume", help="Pod ID to resume")
     parser.add_argument("--stop", help="Pod ID to stop")
+    parser.add_argument("--terminate", help="Pod ID to terminate")
     parser.add_argument("--info", help="Pod ID to get IP/SSH Port")
     parser.add_argument("--find-pod", action="store_true", help="Find an existing pod")
     parser.add_argument("--gpu_count", type=int, default=1, help="GPU count")
@@ -126,6 +137,11 @@ def main():
         res = stop_pod_rest(args.stop)
         if args.json: print(json.dumps(res))
         else: print(f"Stop request sent for {args.stop}")
+
+    elif args.terminate:
+        res = terminate_pod_rest(args.terminate)
+        if args.json: print(json.dumps(res))
+        else: print(f"Terminate request sent for {args.terminate}")
 
     elif args.info:
         pod = get_pod_info(args.info)
