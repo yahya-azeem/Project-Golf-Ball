@@ -20,14 +20,13 @@ def deploy_pod_rest(gpu_type, count, template_id, volume_id=None, ssh_key=None):
         "imageName": "mato1/proteus:styx", 
         "templateId": template_id,
         "gpuCount": count,
-        "gpuTypeId": gpu_type,
+        "gpuTypeIds": [gpu_type], 
         "cloudType": "SECURE",
     }
     if volume_id:
         payload["networkVolumeId"] = volume_id
     if ssh_key:
-        # Note: some documentation says 'sshPublicKey', others 'publicKey'
-        payload["sshPublicKey"] = ssh_key
+        payload["publicKey"] = ssh_key
     
     r = requests.post(url, json=payload, headers=headers)
     return r.json()
