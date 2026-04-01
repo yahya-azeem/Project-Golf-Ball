@@ -33,11 +33,26 @@ def stop_pod_rest(pod_id):
     r = requests.post(url, headers=headers)
     return r.json()
 
-def get_pod_info_rest(pod_id):
-    url = f"{REST_URL}/{pod_id}"
-    headers = {"Authorization": f"Bearer {API_KEY}"}
-    r = requests.get(url, headers=headers)
-    return r.json()
+def get_pod_info(pod_id):
+    query = """
+    query ($podId: String!) {
+      pod(input: {podId: $podId}) {
+        id
+        desiredStatus
+        runtime {
+          ports {
+            ip
+            publicPort
+            privatePort
+          }
+        }
+      }
+    }
+    """
+    res = run_graphql_query(query, {"podId": pod_id})
+    if 'data' in res and res['data'].get('pod'):
+        return res['data']['pod']
+    return None
 
 def get_all_pods_rest():
     headers = {"Authorization": f"Bearer {API_KEY}"}
