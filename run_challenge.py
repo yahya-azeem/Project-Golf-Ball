@@ -33,9 +33,9 @@ def deploy_pod_rest(gpu_type, count, template_id, volume_id=None, ssh_key=None):
     return r.json()
 
 def terminate_pod_rest(pod_id):
-    url = f"https://rest.runpod.io/v1/pods/{pod_id}/terminate"
+    url = f"https://rest.runpod.io/v1/pods/{pod_id}"
     headers = {"Authorization": f"Bearer {API_KEY}"}
-    r = requests.post(url, headers=headers)
+    r = requests.delete(url, headers=headers)
     return r.status_code
 
 def main():
