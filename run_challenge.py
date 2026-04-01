@@ -22,11 +22,12 @@ def deploy_pod_rest(gpu_type, count, template_id, volume_id=None, ssh_key=None):
         "gpuCount": count,
         "gpuTypeIds": [gpu_type], 
         "cloudType": "SECURE",
+        "env": {}
     }
     if volume_id:
         payload["networkVolumeId"] = volume_id
     if ssh_key:
-        payload["publicKey"] = ssh_key
+        payload["env"]["SSH_PUBLIC_KEY"] = ssh_key
     
     r = requests.post(url, json=payload, headers=headers)
     return r.json()
