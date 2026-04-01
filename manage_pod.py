@@ -72,7 +72,7 @@ def find_pod(count=8):
 def wait_for_pod(pod_id, timeout=300):
     start_time = time.time()
     while time.time() - start_time < timeout:
-        pod = get_pod_info_rest(pod_id)
+        pod = get_pod_info(pod_id)
         if isinstance(pod, dict) and pod.get('runtime'):
             ports = pod['runtime'].get('ports')
             if ports:
@@ -127,7 +127,7 @@ def main():
         else: print(f"Stop request sent for {args.stop}")
 
     elif args.info:
-        pod = get_pod_info_rest(args.info)
+        pod = get_pod_info(args.info)
         if args.json: print(json.dumps(pod))
         else: print(f"Pod Info: {pod}")
 
