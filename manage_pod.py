@@ -85,8 +85,8 @@ def wait_for_pod(pod_id, timeout=300):
         pod = get_pod_info(pod_id)
         if isinstance(pod, dict) and pod.get('runtime'):
             ports = pod['runtime'].get('ports', [])
-            # specifically check for privatePort 22 mapping
-            if any(p.get('privatePort') == 22 and p.get('publicPort') for p in ports):
+            # specifically check for privatePort 22 mapping WITH truthy publicPort and ip
+            if any(p.get('privatePort') == 22 and p.get('publicPort') and p.get('ip') for p in ports):
                 return pod
         time.sleep(10)
     return None
