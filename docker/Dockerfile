@@ -7,11 +7,11 @@ FROM nvidia/cuda:12.4.1-cudnn-devel-ubuntu22.04
 ENV DEBIAN_FRONTEND=noninteractive
 ENV PYTHONUNBUFFERED=1
 
-# 1. Install system dependencies
+# 1. Install system dependencies (Minimal)
 RUN apt-get update && apt-get install -y --no-install-recommends \
     python3.11 python3.11-dev python3-pip git ssh openssh-server \
     curl vim htop nvtop ca-certificates ninja-build cmake psmisc build-essential jq \
-    && rm -rf /var/lib/apt/lists/*
+    && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # 2. Update alternatives for python
 RUN update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.11 1 \
@@ -20,13 +20,14 @@ RUN update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.11 1
 # 3. Upgrade pip and install build tools
 RUN python3 -m pip install --no-cache-dir --upgrade pip setuptools wheel packaging ninja
 
-# 4. Install core machine learning stack
-RUN python3 -m pip install --no-cache-dir torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu124
+# 4. Install core machine learning stack (Minimal - Core Torch Only)
+RUN python3 -m pip install --no-cache-dir torch --index-url https://download.pytorch.org/whl/cu124
 
 # 5. Install training dependencies
 RUN python3 -m pip install --no-cache-dir numpy sentencepiece tiktoken huggingface-hub datasets tqdm wandb zstandard
 
-# 6. Install FlashAttention 2
+# 6. Install FlashAttention (Use pre-built wheel to save GHA time/memory)
+# Note: FlashAttention build from source often OOMs GHA runners.
 RUN python3 -m pip install --no-cache-dir flash-attn --no-build-isolation
 
 # 7. Setup SSH for RunPod
