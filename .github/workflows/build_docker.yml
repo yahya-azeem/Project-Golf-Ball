@@ -67,6 +67,12 @@ jobs:
       - name: Install dependencies
         run: pip install requests
 
+      - name: 🤖 Add GHCR to RunPod Registries
+        env:
+          RUNPOD_API_KEY: ${{ secrets.RUNPOD_API_KEY }}
+          GH_PAT_SUBMISSION: ${{ secrets.GH_PAT_SUBMISSION }}
+        run: python runpod/add_registry.py
+
       - name: 🤖 Upsert RunPod Template
         env:
           RUNPOD_API_KEY: ${{ secrets.RUNPOD_API_KEY }}

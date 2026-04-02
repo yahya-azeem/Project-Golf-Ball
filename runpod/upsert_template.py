@@ -3,7 +3,7 @@ import os
 import sys
 import json
 
-def upsert_template(api_key, name, image_name):
+def upsert_template(api_key, name, image_name, registry_id=None):
     """
     Creates or updates a RunPod template using the REST API.
     """
@@ -36,11 +36,14 @@ def upsert_template(api_key, name, image_name):
             "PYTHONUNBUFFERED": "1"
         }
     }
+    
+    if registry_id:
+        print(f"Attaching registryAuthId: {registry_id}")
+        payload["containerRegistryAuthId"] = registry_id
 
     if existing_template:
         template_id = existing_template['id']
         print(f"Found existing template ID: {template_id}. Updating via delete/recreate...")
-        # Common behavior for certain RunPod API versions: delete and recreate if PUT is finicky
         requests.delete(f"{base_url}/{template_id}", headers=headers)
         r_create = requests.post(base_url, headers=headers, json=payload)
         r_create.raise_for_status()
@@ -55,4 +58,13 @@ if __name__ == "__main__":
     api_key = os.environ.get("RUNPOD_API_KEY")
     template_name = sys.argv[1]
     image_tag = sys.argv[2]
-    upsert_template(api_key, template_name, image_tag)
+    
+    # Try to load registry ID from temp file
+    registry_id = None
+    if os.path.exists("runpod_registry_id.txt"):
+        with open("runpod_registry_id.txt", "r") as f:
+            registry_id = f.read().strip()
+            if not registry_id or registry_id == "None":
+                registry_id = None
+
+    upsert_template(api_key, template_name, image_tag, registry_id)
