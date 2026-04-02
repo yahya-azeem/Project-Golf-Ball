@@ -24,10 +24,9 @@ RUN python3 -m pip install --no-cache-dir --upgrade pip setuptools wheel packagi
 RUN python3 -m pip install --no-cache-dir torch --index-url https://download.pytorch.org/whl/cu124
 
 # 5. Install training dependencies
-RUN python3 -m pip install --no-cache-dir numpy sentencepiece tiktoken huggingface-hub datasets tqdm wandb zstandard
+RUN python3 -m pip install --no-cache-dir numpy sentencepiece tiktoken huggingface-hub datasets tqdm wandb zstandard psutil
 
-# 6. Install FlashAttention (Use pre-built wheel to save GHA time/memory)
-# Note: FlashAttention build from source often OOMs GHA runners.
+# 6. Install FlashAttention (Requires psutil for metadata generation)
 RUN python3 -m pip install --no-cache-dir flash-attn --no-build-isolation
 
 # 7. Setup SSH for RunPod
