@@ -28,10 +28,13 @@ def upsert_template(api_key, name, image_name, registry_id=None):
         "imageName": image_name,
         "category": "NVIDIA",
         "isServerless": False,
+        "isPublic": False,
         "volumeInGb": 30,
         "containerDiskInGb": 20,
         "ports": "22/tcp",
-        "dockerStartCmd": "/usr/sbin/sshd -D",
+        "dockerStartCmd": ["/usr/sbin/sshd", "-D"],
+        "dockerEntrypoint": [],
+        "volumeMountPath": "/workspace",
         "env": {
             "PYTHONUNBUFFERED": "1"
         }

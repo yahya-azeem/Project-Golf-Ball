@@ -1,0 +1,33 @@
+name: 🛰️ Manual Template Update (Skip Build)
+
+on:
+  workflow_dispatch:
+
+jobs:
+  update_template:
+    name: 🛰️ Update RunPod Template
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Install dependencies
+        run: pip install requests
+
+      - name: 🤖 Add GHCR to RunPod Registries
+        env:
+          RUNPOD_API_KEY: ${{ secrets.RUNPOD_API_KEY }}
+          GH_PAT_SUBMISSION: ${{ secrets.GH_PAT_SUBMISSION }}
+        run: python runpod/add_registry.py
+
+      - name: 🤖 Upsert RunPod Template
+        env:
+          RUNPOD_API_KEY: ${{ secrets.RUNPOD_API_KEY }}
+        run: |
+          IMAGE_TAG="ghcr.io/${{ github.repository }}:latest"
+          python runpod/upsert_template.py "Project Golf (H100 Optimized)" "$IMAGE_TAG"
