@@ -49,18 +49,22 @@ def upsert_template(api_key, name, image_name, registry_id=None):
         print(f"Found existing template ID: {template_id}. Updating via delete/recreate...")
         requests.delete(f"{base_url}/{template_id}", headers=headers)
         r_create = requests.post(base_url, headers=headers, json=payload)
+        if r_create.status_code != 200 and r_create.status_code != 201:
+            print(f"Error creating template: {r_create.text}", file=sys.stderr)
         r_create.raise_for_status()
         print(f"Successfully re-created template: {name}")
     else:
         print(f"Creating new template: {name}...")
         r_create = requests.post(base_url, headers=headers, json=payload)
+        if r_create.status_code != 200 and r_create.status_code != 201:
+            print(f"Error creating template: {r_create.text}", file=sys.stderr)
         r_create.raise_for_status()
         print(f"Successfully created template: {name}")
 
 if __name__ == "__main__":
     api_key = os.environ.get("RUNPOD_API_KEY")
     template_name = sys.argv[1]
-    image_tag = sys.argv[2]
+    image_tag = sys.argv[2].lower() # Force lowercase for image tag
     
     # Try to load registry ID from temp file
     registry_id = None
