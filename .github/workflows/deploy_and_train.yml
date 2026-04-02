@@ -33,7 +33,7 @@ jobs:
       - name: 🛡️ CPU Validation
         if: github.event.inputs.skip_cpu_test != 'true'
         run: |
-          python cpu_test.py
+          python runpod/cpu_test.py
 
       - name: 🛰️ Resume or Deploy RunPod
         id: manage
@@ -46,7 +46,7 @@ jobs:
           POD_ID="$SECRET_POD_ID"
           if [ -z "$POD_ID" ] || [ "$POD_ID" == "null" ]; then
             echo "Searching for existing 8xH100 pod..."
-            DIS_POD=$(python manage_pod.py --find-pod --gpu_count ${{ github.event.inputs.gpu_count }} --json 2>/dev/null || echo '{"error": "not found"}')
+            DIS_POD=$(python runpod/manage_pod.py --find-pod --gpu_count ${{ github.event.inputs.gpu_count }} --json 2>/dev/null || echo '{"error": "not found"}')
             if echo "$DIS_POD" | jq -e '.id' >/dev/null 2>&1; then
               POD_ID=$(echo "$DIS_POD" | jq -r .id)
               echo "Discovered pod ID: $POD_ID"
@@ -56,7 +56,7 @@ jobs:
           # 2. Try Resuming
           if [ ! -z "$POD_ID" ] && [ "$POD_ID" != "null" ]; then
             echo "Attempting to resume pod: $POD_ID"
-            if python manage_pod.py --resume "$POD_ID" --gpu_count ${{ github.event.inputs.gpu_count }} --json > pod_info.json 2>/dev/null; then
+            if python runpod/manage_pod.py --resume "$POD_ID" --gpu_count ${{ github.event.inputs.gpu_count }} --json > pod_info.json 2>/dev/null; then
               echo "Successfully resumed pod."
               echo "was_resumed=true" >> $GITHUB_OUTPUT
               echo "pod_id=$(jq -r .pod_id pod_info.json)" >> $GITHUB_OUTPUT
@@ -71,7 +71,7 @@ jobs:
           VOLUME_ID="$SECRET_VOLUME_ID"
           if [ -z "$VOLUME_ID" ] || [ "$VOLUME_ID" == "null" ]; then
             echo "Searching for 30GB network volume..."
-            DIS_VOL=$(python manage_pod.py --find-volume --json 2>/dev/null || echo '{"error": "not found"}')
+            DIS_VOL=$(python runpod/manage_pod.py --find-volume --json 2>/dev/null || echo '{"error": "not found"}')
             if echo "$DIS_VOL" | jq -e '.id' >/dev/null 2>&1; then
               VOLUME_ID=$(echo "$DIS_VOL" | jq -r .id)
               echo "Discovered volume ID: $VOLUME_ID"
@@ -82,8 +82,8 @@ jobs:
           echo "Fallback: Deploying new pod..."
           [ ! -z "$VOLUME_ID" ] && [ "$VOLUME_ID" != "null" ] && VOL_ARG="--network_volume_id $VOLUME_ID" || VOL_ARG=""
           
-          PUB_KEY=$(cat ssh_key.pub)
-          python run_challenge.py --json --count ${{ github.event.inputs.gpu_count }} \
+          PUB_KEY=$(cat runpod/ssh_key.pub)
+          python runpod/run_challenge.py --json --count ${{ github.event.inputs.gpu_count }} \
             --template t7iu9ugzpi \
             --ssh_public_key "$PUB_KEY" \
             $VOL_ARG > pod_info.json 2>/dev/null || (cat pod_info.json && exit 1)
@@ -169,9 +169,9 @@ jobs:
 
           if [ "$WAS_RESUMED" == "true" ]; then
             echo "Stopping (pausing) resumed pod: $POD_ID"
-            python manage_pod.py --stop "$POD_ID"
+            python runpod/manage_pod.py --stop "$POD_ID"
           else
             echo "Terminating newly created pod: $POD_ID"
-            python run_challenge.py --terminate "$POD_ID"
+            python runpod/run_challenge.py --terminate "$POD_ID"
           fi
 
