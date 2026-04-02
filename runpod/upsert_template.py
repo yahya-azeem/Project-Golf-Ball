@@ -31,7 +31,7 @@ def upsert_template(api_key, name, image_name, registry_id=None):
         "isPublic": False,
         "volumeInGb": 30,
         "containerDiskInGb": 20,
-        "ports": "22/tcp",
+        "ports": ["22/tcp"],
         "dockerStartCmd": ["/usr/sbin/sshd", "-D"],
         "dockerEntrypoint": [],
         "volumeMountPath": "/workspace",
