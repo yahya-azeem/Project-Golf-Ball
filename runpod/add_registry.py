@@ -8,7 +8,7 @@ def add_registry(api_key, name, username, password):
     Adds a container registry to RunPod via the REST API.
     Returns the ID of the new registry.
     """
-    url = "https://api.runpod.io/v1/containerregistryauth"
+    url = "https://rest.runpod.io/v1/containerregistryauth"
     headers = {
         "Authorization": f"Bearer {api_key}",
         "Content-Type": "application/json"

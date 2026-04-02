@@ -7,7 +7,7 @@ def upsert_template(api_key, name, image_name, registry_id=None):
     """
     Creates or updates a RunPod template using the REST API.
     """
-    base_url = "https://api.runpod.io/v1/templates"
+    base_url = "https://rest.runpod.io/v1/templates"
     headers = {
         "Authorization": f"Bearer {api_key}",
         "Content-Type": "application/json"
