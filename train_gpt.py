@@ -106,6 +106,8 @@ class Hyperparameters:
     
     # TTT Hparams
     ttt_enabled = True
+    ttt_min_lr = 0.0001
+    ttt_max_grad_norm = 1.0
     ttt_lr = 0.002
     ttt_epochs = 3
     ttt_chunk_tokens = 32768
@@ -113,6 +115,12 @@ class Hyperparameters:
     ttt_momentum = 0.9
     ttt_batch_seqs = 32
     ttt_grad_clip = 1.0
+
+# --- SEEDING ---
+torch.manual_seed(Hyperparameters.seed)
+torch.cuda.manual_seed_all(Hyperparameters.seed)
+np.random.seed(Hyperparameters.seed)
+random.seed(Hyperparameters.seed)
 
 # --- Batched Newton-Schulz orthogonalization ---
 

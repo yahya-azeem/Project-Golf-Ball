@@ -33,7 +33,7 @@ jobs:
       - name: 🛡️ CPU Validation
         if: github.event.inputs.skip_cpu_test != 'true'
         run: |
-          python runpod/cpu_test.py
+          PYTHONPATH=. python runpod/cpu_test.py
 
       - name: 🛰️ Resume or Deploy RunPod
         id: manage
