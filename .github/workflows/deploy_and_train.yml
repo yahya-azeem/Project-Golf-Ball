@@ -100,45 +100,62 @@ jobs:
           chmod 600 ~/.ssh/id_ed25519
           ssh-keyscan -p ${{ steps.manage.outputs.port }} ${{ steps.manage.outputs.ip }} >> ~/.ssh/known_hosts
 
-      - name: 🏋️ Training on Pod
+      - name: 🏋️ Training on Pod (Conditional 3-Seed)
         run: |
           ssh -i ~/.ssh/id_ed25519 root@${{ steps.manage.outputs.ip }} -p ${{ steps.manage.outputs.port }} "bash -c '
             mkdir -p /workspace && cd /workspace && \
-            # Clone or update the project repository
-            if [ ! -d \"project_golf\" ]; then
-              git clone -b main https://github.com/${{ github.repository }}.git project_golf;
-            else
-              cd project_golf && git fetch origin && git reset --hard origin/main && cd ..;
-            fi && \
-            cd project_golf && \
-            # Check for existing dependencies (only minimal ones if missing)
-            if ! python3 -c \"import flash_attn\" 2>/dev/null; then
-              echo \"Check for missing dependencies...\" && \
-              pip install --break-system-packages wandb || true;
-            else
-              echo \"Primary dependencies found in template, skipping installation.\";
-            fi && \
-            # Setup OpenAI Challenge structure inside workspace
-            cd /workspace && \
-            if [ ! -d \"parameter-golf\" ]; then
-              git clone https://github.com/openai/parameter-golf.git;
-            fi && \
-            cp project_golf/train_gpt.py parameter-golf/train_gpt.py && \
-            cd parameter-golf && \
-            # Run dataset preparation
+            [ ! -d \"project_golf\" ] && git clone -b main https://github.com/${{ github.repository }}.git project_golf || (cd project_golf && git fetch origin && git reset --hard origin/main); \
+            cd /workspace/project_golf && SOTA=\$(python3 runpod/get_sota.py); \
+            echo \"Current SOTA: \$SOTA\" && \
+            cd /workspace && [ ! -d \"parameter-golf\" ] && git clone https://github.com/openai/parameter-golf.git || true; \
+            cp project_golf/train_gpt.py parameter-golf/train_gpt.py && cd parameter-golf && \
             python3 data/cached_challenge_fineweb.py --variant sp1024 && \
-            # Execute Training
-            torchrun --standalone --nproc_per_node=${{ github.event.inputs.gpu_count }} train_gpt.py
-          '" > train.log 2>&1
-          cat train.log
+            
+            # --- SEED LOOP ---
+            RESULTS=\"\"
+            for SEED in 0 1 2; do
+              echo \"🚀 Starting Seed: \$SEED\"
+              export SEED=\$SEED
+              torchrun --standalone --nproc_per_node=${{ github.event.inputs.gpu_count }} train_gpt.py > \"train_seed_\$SEED.log\" 2>&1
+              
+              BPB=\$(grep \"Final TTT BPB:\" \"train_seed_\$SEED.log\" | tail -1 | awk \"{print \\\$NF}\")
+              echo \"Seed \$SEED BPB: \$BPB\"
+              RESULTS=\"\$RESULTS \$BPB\"
+              
+              if [ \"\$SEED\" == \"0\" ]; then
+                # Worthiness Check: Seed 0 must be close to or better than SOTA (+0.015 buffer)
+                WORTHY=\$(python3 -c \"print(float('\$BPB') < (float('\$SOTA') + 0.015))\")
+                if [ \"\$WORTHY\" != \"True\" ]; then
+                  echo \"⚠️ Seed 0 result (\$BPB) not worthy of full 3-seed evaluation (SOTA \$SOTA). Stopping.\"
+                  break
+                fi
+                echo \"✅ Seed 0 looks worthy! Continuing with seeds 1 and 2...\"
+              fi
+            done
+            echo \"ALL_RESULTS: \$RESULTS\" > /workspace/parameter-golf/results.summary
+          '" > train_overall.log 2>&1
+          cat train_overall.log
 
       - name: Create Summary
         run: |
-          BPB=$(grep "Final TTT BPB:" train.log | tail -1 | awk '{print $NF}')
-          SIZE=$(grep "Final Artifact Size:" train.log | tail -1 | awk '{print $NF}')
+          # 1. Parse results.summary back through SSH
+          RESULTS=$(ssh -i ~/.ssh/id_ed25519 root@${{ steps.manage.outputs.ip }} -p ${{ steps.manage.outputs.port }} "cat /workspace/parameter-golf/results.summary | cut -d: -f2")
           echo "### Challenge Results 🚀" >> $GITHUB_STEP_SUMMARY
-          echo "- **Final TTT BPB**: $BPB" >> $GITHUB_STEP_SUMMARY
-          echo "- **Artifact Size**: $SIZE bytes" >> $GITHUB_STEP_SUMMARY
+          
+          COUNT=0; TOTAL=0; 
+          for VAL in $RESULTS; do
+            echo "- **Seed $COUNT BPB**: $VAL" >> $GITHUB_STEP_SUMMARY
+            TOTAL=$(echo "$TOTAL + $VAL" | bc -l)
+            COUNT=$((COUNT + 1))
+          done
+          
+          if [ "$COUNT" -gt 0 ]; then
+            MEAN=$(echo "$TOTAL / $COUNT" | bc -l | xargs printf "%.4f")
+            echo "- **Mean BPB ($COUNT seeds)**: **$MEAN**" >> $GITHUB_STEP_SUMMARY
+            if [ "$COUNT" -eq 3 ]; then
+              echo "✅ Full 3-Seed Evaluation Complete." >> $GITHUB_STEP_SUMMARY
+            fi
+          fi
 
       - name: Collect Artifacts
         if: always()
