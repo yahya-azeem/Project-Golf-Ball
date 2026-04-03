@@ -157,6 +157,23 @@ jobs:
             fi
           fi
 
+      - name: 🚀 Submit PR
+        if: always() && steps.manage.outputs.pod_id != ''
+        env:
+          GH_TOKEN: ${{ secrets.GH_PAT_SUBMISSION }}
+        run: |
+          RESULTS=$(ssh -i ~/.ssh/id_ed25519 root@${{ steps.manage.outputs.ip }} -p ${{ steps.manage.outputs.port }} "cat /workspace/parameter-golf/results.summary | cut -d: -f2")
+          python3 runpod/generate_pr_description.py "$RESULTS"
+          
+          # Check if PR already exists for this branch to avoid duplicates
+          if gh pr view --json state >/dev/null 2>&1; then
+            echo "PR already exists. Updating..."
+            gh pr edit --title "$(cat pr_title.txt)" --body-file pr_body.md
+          else
+            echo "Creating new PR..."
+            gh pr create --title "$(cat pr_title.txt)" --body-file pr_body.md --draft=false
+          fi
+
       - name: Collect Artifacts
         if: always()
         run: |
