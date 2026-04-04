@@ -42,58 +42,25 @@ jobs:
           SECRET_POD_ID: ${{ secrets.RUNPOD_POD_ID }}
           SECRET_VOLUME_ID: ${{ secrets.RUNPOD_NETWORK_VOLUME_ID }}
         run: |
-          set -ex
-          # 1. Determine Pod ID (Secret or Discovery)
+          # 1. Determine Pod ID
           POD_ID="$SECRET_POD_ID"
           if [ -z "$POD_ID" ] || [ "$POD_ID" == "null" ]; then
-            echo "Searching for existing 8xH100 pod..."
             DIS_POD=$(python runpod/manage_pod.py --find-pod --gpu_count ${{ github.event.inputs.gpu_count }} --json || echo '{"error": "not found"}')
             if echo "$DIS_POD" | jq -e '.id' >/dev/null 2>&1; then
               POD_ID=$(echo "$DIS_POD" | jq -r .id)
-              echo "Discovered pod ID: $POD_ID"
             fi
           fi
- 
-          # 2. Try Resuming
+
+          # 2. Resume or Deploy
           if [ ! -z "$POD_ID" ] && [ "$POD_ID" != "null" ]; then
-            echo "Attempting to resume pod: $POD_ID"
-            if python runpod/manage_pod.py --resume "$POD_ID" --gpu_count ${{ github.event.inputs.gpu_count }} --json > pod_info.json; then
-              echo "Successfully resumed pod."
-              echo "was_resumed=true" >> $GITHUB_OUTPUT
-              echo "pod_id=$(jq -r .pod_id pod_info.json)" >> $GITHUB_OUTPUT
-              echo "ip=$(jq -r .ip pod_info.json)" >> $GITHUB_OUTPUT
-              echo "port=$(jq -r .port pod_info.json)" >> $GITHUB_OUTPUT
-              exit 0
-            fi
-            echo "Resume failed, falling back to fresh deploy."
-          fi
- 
-          # 3. Determine Volume ID (Secret or Discovery)
-          VOLUME_ID="$SECRET_VOLUME_ID"
-          if [ -z "$VOLUME_ID" ] || [ "$VOLUME_ID" == "null" ]; then
-            echo "Searching for 30GB network volume..."
-            DIS_VOL=$(python runpod/manage_pod.py --find-volume --json || echo '{"error": "not found"}')
-            if echo "$DIS_VOL" | jq -e '.id' >/dev/null 2>&1; then
-              VOLUME_ID=$(echo "$DIS_VOL" | jq -r .id)
-              echo "Discovered volume ID: $VOLUME_ID"
-            fi
-          fi
- 
-          # 4. Fallback to fresh deployment
-          echo "Fallback: Deploying new pod..."
-          [ ! -z "$VOLUME_ID" ] && [ "$VOLUME_ID" != "null" ] && VOL_ARG="--network_volume_id $VOLUME_ID" || VOL_ARG=""
-          
-          PUB_KEY=$(cat runpod/ssh_key.pub)
-          if ! python runpod/run_challenge.py --json --count ${{ github.event.inputs.gpu_count }} \
-            --template t7iu9ugzpi \
-            --ssh_public_key "$PUB_KEY" \
-            $VOL_ARG > pod_info.json; then
-            echo "❌ Deployment Failed!"
-            cat pod_info.json || true
-            exit 1
+            python runpod/manage_pod.py --resume "$POD_ID" --gpu_count ${{ github.event.inputs.gpu_count }} --json > pod_info.json
+          else
+            [ ! -z "$SECRET_VOLUME_ID" ] && VOL_ARG="--network_volume_id $SECRET_VOLUME_ID" || VOL_ARG=""
+            PUB_KEY=$(cat runpod/ssh_key.pub)
+            python runpod/run_challenge.py --json --count ${{ github.event.inputs.gpu_count }} --template t7iu9ugzpi --ssh_public_key "$PUB_KEY" $VOL_ARG > pod_info.json
           fi
           
-          echo "was_resumed=false" >> $GITHUB_OUTPUT
+          cat pod_info.json
           echo "pod_id=$(jq -r .pod_id pod_info.json)" >> $GITHUB_OUTPUT
           echo "ip=$(jq -r .ip pod_info.json)" >> $GITHUB_OUTPUT
           echo "port=$(jq -r .port pod_info.json)" >> $GITHUB_OUTPUT
@@ -103,12 +70,14 @@ jobs:
           mkdir -p ~/.ssh
           echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_ed25519
           chmod 600 ~/.ssh/id_ed25519
-          ssh-keyscan -p ${{ steps.manage.outputs.port }} ${{ steps.manage.outputs.ip }} >> ~/.ssh/known_hosts
+          ssh-keyscan -o StrictHostKeyChecking=no -p ${{ steps.manage.outputs.port }} ${{ steps.manage.outputs.ip }} >> ~/.ssh/known_hosts
 
       - name: 🏋️ Training on Pod (Conditional 3-Seed)
         run: |
-          ssh -i ~/.ssh/id_ed25519 root@${{ steps.manage.outputs.ip }} -p ${{ steps.manage.outputs.port }} "bash -c '
+          # Use -tt for real-time streaming to GHA console
+          ssh -tt -i ~/.ssh/id_ed25519 root@${{ steps.manage.outputs.ip }} -p ${{ steps.manage.outputs.port }} "bash -c '
             set -e
+            export PYTHONUNBUFFERED=1
             mkdir -p /workspace/parameter-golf && cd /workspace/parameter-golf
             [ ! -d \"project_golf_ball\" ] && git clone -b main https://github.com/${{ github.repository }}.git project_golf_ball || (cd project_golf_ball && git fetch origin && git reset --hard origin/main)
             
@@ -119,113 +88,60 @@ jobs:
             cp project_golf_ball/train_gpt.py openai-golf/train_gpt.py && cd openai-golf
             python3 data/cached_challenge_fineweb.py --variant sp1024
             
-            RESULTS=\"\"
+            FINAL_RESULTS=\"\"
             for SEED in 0 1 2; do
               echo \"🚀 Starting Seed: \$SEED\"
               export SEED=\$SEED
-              # Stream output to GHA console while also saving to a file
-              stdbuf -oL torchrun --standalone --nproc_per_node=${{ github.event.inputs.gpu_count }} train_gpt.py 2>&1 | tee \"train_seed_\$SEED.log\"
+              torchrun --standalone --nproc_per_node=${{ github.event.inputs.gpu_count }} train_gpt.py 2>&1 | tee train_seed_\$SEED.log
               
-              BPB=\$(grep \"Final TTT BPB:\" \"train_seed_\$SEED.log\" | tail -1 | awk \"{print \\\$NF}\" || echo \"\")
-              
+              BPB=\$(grep \"Final TTT BPB:\" train_seed_\$SEED.log | tail -1 | awk \"{print \\\$NF}\" || echo \"\")
               if [ -z \"\$BPB\" ]; then
-                echo \"❌ Seed \$SEED crashed or produced no score. Stopping.\"
+                echo \"❌ Seed \$SEED failed. Check logs above.\"
                 break
               fi
-
+              
               echo \"Seed \$SEED BPB: \$BPB\"
-              RESULTS=\"\$RESULTS \$BPB\"
+              FINAL_RESULTS=\"\$FINAL_RESULTS \$BPB\"
               
               if [ \"\$SEED\" == \"0\" ]; then
                 WORTHY=\$(python3 -c \"print(float('\$BPB') < (float('\$SOTA') + 0.015))\")
                 if [ \"\$WORTHY\" != \"True\" ]; then
-                  echo \"⚠️ Seed 0 (\$BPB) NOT worthy of 3-seed evaluation (SOTA \$SOTA). Aborting.\"
+                  echo \"⚠️ Seed 0 (\$BPB) not worthy. Aborting.\"
                   break
                 fi
-                echo \"✅ Seed 0 looks worthy! Continuing...\"
               fi
             done
-            echo \"\$RESULTS\" > /workspace/parameter-golf/results.summary
-          '" > train_overall.log 2>&1
-          cat train_overall.log
+            echo \"\$FINAL_RESULTS\" > /workspace/parameter-golf/results.summary
+          '"
 
       - name: Create Summary
         run: |
           RESULTS=$(ssh -i ~/.ssh/id_ed25519 root@${{ steps.manage.outputs.ip }} -p ${{ steps.manage.outputs.port }} "cat /workspace/parameter-golf/results.summary")
           echo "### Challenge Results 🚀" >> $GITHUB_STEP_SUMMARY
-          
-          COUNT=0; TOTAL=0; 
-          for VAL in $RESULTS; do
-            echo "- **Seed $COUNT BPB**: $VAL" >> $GITHUB_STEP_SUMMARY
-            TOTAL=$(echo "$TOTAL + $VAL" | bc -l)
-            COUNT=$((COUNT + 1))
-          done
-          
-          if [ "$COUNT" -gt 0 ]; then
-            MEAN=$(echo "$TOTAL / $COUNT" | bc -l | xargs printf "%.4f")
-            echo "- **Mean BPB ($COUNT seeds)**: **$MEAN**" >> $GITHUB_STEP_SUMMARY
-          fi
+          echo "Seeds: $RESULTS" >> $GITHUB_STEP_SUMMARY
 
       - name: 🚀 Submit PR
         if: always() && steps.manage.outputs.pod_id != ''
         env:
           GH_TOKEN: ${{ secrets.GH_PAT_SUBMISSION }}
         run: |
-          # 1. Capture results locally
           scp -i ~/.ssh/id_ed25519 -P ${{ steps.manage.outputs.port }} -o StrictHostKeyChecking=no root@${{ steps.manage.outputs.ip }}:/workspace/parameter-golf/results.summary ./results.summary || echo "" > results.summary
           RESULTS=$(cat results.summary)
-          
-          # 2. Prepare PR meta
           python3 runpod/generate_pr_description.py "$RESULTS"
-          
-          # 3. Create unique branch for this run to avoid "head same as base" error
           BRANCH_NAME="results/run-${{ github.run_id }}"
           git checkout -b "$BRANCH_NAME"
-          
-          # 4. Commit results to the branch
           echo "$RESULTS" > last_results.txt
           git config user.name "Project Golf CI/CD"
           git config user.email "ci-cd@project-golf.ball"
           git add last_results.txt
           git commit -m "Results for run ${{ github.run_id }}: $RESULTS"
           git push origin "$BRANCH_NAME"
-          
-          # 5. Create PR from the unique branch to main
-          echo "Creating PR for $BRANCH_NAME..."
           gh pr create --title "$(cat pr_title.txt)" --body-file pr_body.md --head "$BRANCH_NAME" --base main --draft=false
 
-      - name: Collect Artifacts
-        if: always()
-        run: |
-          scp -i ~/.ssh/id_ed25519 -P ${{ steps.manage.outputs.port }} root@${{ steps.manage.outputs.ip }}:/workspace/parameter-golf/final_model.ptz ./final_model.ptz || true
-          scp -i ~/.ssh/id_ed25519 -P ${{ steps.manage.outputs.port }} root@${{ steps.manage.outputs.ip }}:/workspace/parameter-golf/data/tokenizers/fineweb_1024_bpe.model ./fineweb_1024_bpe.model || true
-
-      - name: Upload Artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: challenge_artifacts
-          path: |
-            final_model.ptz
-            fineweb_1024_bpe.model
-
-      - name: 💤 Cleanup (Stop/Terminate)
+      - name: 💤 Cleanup
         if: always()
         env:
           RUNPOD_API_KEY: ${{ secrets.RUNPOD_API_KEY }}
         run: |
           POD_ID="${{ steps.manage.outputs.pod_id }}"
-          WAS_RESUMED="${{ steps.manage.outputs.was_resumed }}"
-          
-          if [ -z "$POD_ID" ] || [ "$POD_ID" == "null" ]; then
-            echo "No Pod ID found to cleanup."
-            exit 0
-          fi
-
-          if [ "$WAS_RESUMED" == "true" ]; then
-            echo "Stopping (pausing) resumed pod: $POD_ID"
-            python runpod/manage_pod.py --stop "$POD_ID"
-          else
-            echo "Terminating newly created pod: $POD_ID"
-            python runpod/run_challenge.py --terminate "$POD_ID"
-          fi
-
+          python runpod/run_challenge.py --terminate "$POD_ID" || true

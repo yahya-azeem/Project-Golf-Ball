@@ -555,87 +555,93 @@ def eval_val_sliding_ttt(args: Hyperparameters, model: nn.Module, rank: int, wor
 # --- Main Training Loop ---
 
 def main():
-    args = Hyperparameters()
-    distributed = "RANK" in os.environ
-    if distributed:
-        dist.init_process_group(backend="nccl")
-        rank, ws, local_rank = dist.get_rank(), dist.get_world_size(), int(os.environ["LOCAL_RANK"])
-    else:
-        rank, ws, local_rank = 0, 1, 0
-    device = torch.device("cuda", local_rank)
-    
-    # --- SEEDING (after dist init) ---
-    torch.manual_seed(args.seed)
-    torch.cuda.manual_seed_all(args.seed)
-    np.random.seed(args.seed)
-    random.seed(args.seed)
-    
-    if rank == 0: print(f"Starting Project Golf Ball | Run ID: {args.run_id}")
-    
-    sp = spm.SentencePieceProcessor(model_file=args.tokenizer_path)
-    val_tokens = load_all_tokens(args.val_files, args.train_seq_len)
-    luts = build_sentencepiece_luts(sp, args.vocab_size, device)
-    
-    model = GPT(args).to(device).bfloat16()
-    
-    # Runpod Tip: Compile for competition speed (free wallclock time)
-    if USE_COMPILE:
-        if rank == 0: print("Compiling model (takes 3-4 mins)...")
-        model = torch.compile(model)
+    try:
+        args = Hyperparameters()
+        distributed = "RANK" in os.environ
+        if distributed:
+            dist.init_process_group(backend="nccl")
+            rank, ws, local_rank = dist.get_rank(), dist.get_world_size(), int(os.environ["LOCAL_RANK"])
+        else:
+            rank, ws, local_rank = 0, 1, 0
+        device = torch.device("cuda", local_rank)
         
-    model.qo_bank.data = model.qo_bank.data.float()
-    model.kv_bank.data = model.kv_bank.data.float()
-    model.mlp_up_bank.data = model.mlp_up_bank.data.float()
-    model.mlp_down_bank.data = model.mlp_down_bank.data.float()
-    
-    optimizer_muon = Muon([model.qo_bank, model.kv_bank, model.mlp_up_bank, model.mlp_down_bank], lr=args.matrix_lr, momentum=args.muon_momentum, backend_steps=args.muon_backend_steps, weight_decay=args.muon_wd)
-    optimizer_adam = torch.optim.AdamW([p for name, p in model.named_parameters() if p.ndim < 2 or "tok_emb" in name], lr=args.scalar_lr, betas=(args.beta1, args.beta2), fused=True)
-    
-    train_loader = DistributedTokenLoader(args.train_files, rank, ws, device)
-    t_start = time.perf_counter()
-    
-    if not SKIP_INIT_VAL:
-        if rank == 0: print("Running initial validation...")
-        val_loss, val_bpb = eval_val(args, model, rank, ws, device, val_tokens, luts)
-        if rank == 0: print(f"Initial Val Loss: {val_loss:.4f} | Initial BPB: {val_bpb:.4f}")
-
-    for step in range(args.iterations):
-        elapsed = time.perf_counter() - t_start
-        if elapsed > args.max_wallclock_seconds: break
+        # --- SEEDING (after dist init) ---
+        torch.manual_seed(args.seed)
+        torch.cuda.manual_seed_all(args.seed)
+        np.random.seed(args.seed)
+        random.seed(args.seed)
         
-        scale = 1.0 - (step / args.iterations)
-        for pg in optimizer_muon.param_groups: pg['lr'] = args.matrix_lr * scale
-        for pg in optimizer_adam.param_groups: pg['lr'] = (args.tied_embed_lr if any("tok_emb" in n for n, p in model.named_parameters() if p is pg['params'][0]) else args.scalar_lr) * scale
+        if rank == 0: print(f"Starting Project Golf Ball | Run ID: {args.run_id}")
         
-        optimizer_muon.zero_grad(); optimizer_adam.zero_grad()
-        accum = 8 // ws if ws <= 8 else 1
-        for _ in range(accum):
-            x, y = train_loader.next_batch(args.train_batch_tokens, args.train_seq_len, accum)
-            with torch.autocast(device_type="cuda", dtype=torch.bfloat16):
-                loss = model(x, y)
-            (loss / accum).backward()
+        sp = spm.SentencePieceProcessor(model_file=args.tokenizer_path)
+        val_tokens = load_all_tokens(args.val_files, args.train_seq_len)
+        luts = build_sentencepiece_luts(sp, args.vocab_size, device)
+        
+        model = GPT(args).to(device).bfloat16()
+        
+        # Runpod Tip: Compile for competition speed (free wallclock time)
+        if USE_COMPILE:
+            if rank == 0: print("Compiling model (takes 3-4 mins)...")
+            model = torch.compile(model)
             
-        optimizer_muon.launch_reduce_scatters()
-        for p in [p for name, p in model.named_parameters() if p.ndim < 2 or "tok_emb" in name]:
-            if p.grad is not None and distributed: dist.all_reduce(p.grad, op=dist.ReduceOp.AVG)
-        optimizer_adam.step()
-        optimizer_muon.step()
+        model.qo_bank.data = model.qo_bank.data.float()
+        model.kv_bank.data = model.kv_bank.data.float()
+        model.mlp_up_bank.data = model.mlp_up_bank.data.float()
+        model.mlp_down_bank.data = model.mlp_down_bank.data.float()
         
-        if rank == 0 and step % args.train_log_every == 0:
-            print(f"Step {step} | Loss {loss.item():.4f} | Time {elapsed:.1f}s | Progress {step/args.iterations:.1%}")
-
-    # --- Post-training: Quantize and Evaluate ---
-    if rank == 0:
-        print("Training complete. Quantizing...")
-        # If compiled, access the original model
-        m_to_quant = model._orig_mod if hasattr(model, "_orig_mod") else model
-        blob = project_golf_quantize(m_to_quant)
-        with open("final_model.ptz", "wb") as f: f.write(blob)
-        print(f"Final Artifact Size: {len(blob)} bytes")
+        optimizer_muon = Muon([model.qo_bank, model.kv_bank, model.mlp_up_bank, model.mlp_down_bank], lr=args.matrix_lr, momentum=args.muon_momentum, backend_steps=args.muon_backend_steps, weight_decay=args.muon_wd)
+        optimizer_adam = torch.optim.AdamW([p for name, p in model.named_parameters() if p.ndim < 2 or "tok_emb" in name], lr=args.scalar_lr, betas=(args.beta1, args.beta2), fused=True)
         
-        if args.ttt_enabled:
-            print("Running Test-Time Training (TTT) Evaluator...")
-            _, ttt_bpb = eval_val_sliding_ttt(args, m_to_quant, rank, ws, device, val_tokens, luts)
-            print(f"Final TTT BPB: {ttt_bpb:.6f}")
+        train_loader = DistributedTokenLoader(args.train_files, rank, ws, device)
+        t_start = time.perf_counter()
+        
+        if not SKIP_INIT_VAL:
+            if rank == 0: print("Running initial validation...")
+            val_loss, val_bpb = eval_val(args, model, rank, ws, device, val_tokens, luts)
+            if rank == 0: print(f"Initial Val Loss: {val_loss:.4f} | Initial BPB: {val_bpb:.4f}")
+    
+        for step in range(args.iterations):
+            elapsed = time.perf_counter() - t_start
+            if elapsed > args.max_wallclock_seconds: break
+            
+            scale = 1.0 - (step / args.iterations)
+            for pg in optimizer_muon.param_groups: pg['lr'] = args.matrix_lr * scale
+            for pg in optimizer_adam.param_groups: pg['lr'] = (args.tied_embed_lr if any("tok_emb" in n for n, p in model.named_parameters() if p is pg['params'][0]) else args.scalar_lr) * scale
+            
+            optimizer_muon.zero_grad(); optimizer_adam.zero_grad()
+            accum = 8 // ws if ws <= 8 else 1
+            for _ in range(accum):
+                x, y = train_loader.next_batch(args.train_batch_tokens, args.train_seq_len, accum)
+                with torch.autocast(device_type="cuda", dtype=torch.bfloat16):
+                    loss = model(x, y)
+                (loss / accum).backward()
+                
+            optimizer_muon.launch_reduce_scatters()
+            for p in [p for name, p in model.named_parameters() if p.ndim < 2 or "tok_emb" in name]:
+                if p.grad is not None and distributed: dist.all_reduce(p.grad, op=dist.ReduceOp.AVG)
+            optimizer_adam.step()
+            optimizer_muon.step()
+            
+            if rank == 0 and step % args.train_log_every == 0:
+                print(f"Step {step} | Loss {loss.item():.4f} | Time {elapsed:.1f}s | Progress {step/args.iterations:.1%}")
+    
+        # --- Post-training: Quantize and Evaluate ---
+        if rank == 0:
+            print("Training complete. Quantizing...")
+            # If compiled, access the original model
+            m_to_quant = model._orig_mod if hasattr(model, "_orig_mod") else model
+            blob = project_golf_quantize(m_to_quant)
+            with open("final_model.ptz", "wb") as f: f.write(blob)
+            print(f"Final Artifact Size: {len(blob)} bytes")
+            
+            if args.ttt_enabled:
+                print("Running Test-Time Training (TTT) Evaluator...")
+                _, ttt_bpb = eval_val_sliding_ttt(args, m_to_quant, rank, ws, device, val_tokens, luts)
+                print(f"Final TTT BPB: {ttt_bpb:.6f}")
+    except Exception as e:
+        import traceback
+        print(f"CRASH in main: {e}")
+        traceback.print_exc()
+        sys.exit(1)
 
 if __name__ == "__main__": main()
