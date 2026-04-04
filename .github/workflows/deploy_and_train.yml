@@ -171,17 +171,28 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GH_PAT_SUBMISSION }}
         run: |
-          RESULTS=$(ssh -i ~/.ssh/id_ed25519 root@${{ steps.manage.outputs.ip }} -p ${{ steps.manage.outputs.port }} "cat /workspace/parameter-golf/results.summary")
+          # 1. Capture results locally
+          scp -i ~/.ssh/id_ed25519 -P ${{ steps.manage.outputs.port }} -o StrictHostKeyChecking=no root@${{ steps.manage.outputs.ip }}:/workspace/parameter-golf/results.summary ./results.summary || echo "" > results.summary
+          RESULTS=$(cat results.summary)
+          
+          # 2. Prepare PR meta
           python3 runpod/generate_pr_description.py "$RESULTS"
           
-          # Check if PR already exists for this branch to avoid duplicates
-          if gh pr view --json state >/dev/null 2>&1; then
-            echo "PR already exists. Updating..."
-            gh pr edit --title "$(cat pr_title.txt)" --body-file pr_body.md
-          else
-            echo "Creating new PR..."
-            gh pr create --title "$(cat pr_title.txt)" --body-file pr_body.md --draft=false
-          fi
+          # 3. Create unique branch for this run to avoid "head same as base" error
+          BRANCH_NAME="results/run-${{ github.run_id }}"
+          git checkout -b "$BRANCH_NAME"
+          
+          # 4. Commit results to the branch
+          echo "$RESULTS" > last_results.txt
+          git config user.name "Project Golf CI/CD"
+          git config user.email "ci-cd@project-golf.ball"
+          git add last_results.txt
+          git commit -m "Results for run ${{ github.run_id }}: $RESULTS"
+          git push origin "$BRANCH_NAME"
+          
+          # 5. Create PR from the unique branch to main
+          echo "Creating PR for $BRANCH_NAME..."
+          gh pr create --title "$(cat pr_title.txt)" --body-file pr_body.md --head "$BRANCH_NAME" --base main --draft=false
 
       - name: Collect Artifacts
         if: always()
