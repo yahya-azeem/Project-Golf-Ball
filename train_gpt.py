@@ -484,7 +484,7 @@ def eval_val(args: Hyperparameters, model: nn.Module, rank: int, ws: int, device
     seq_len = args.train_seq_len
     total_seqs = (val_tokens.numel() - 1) // seq_len
     my_s, my_e = (total_seqs * rank) // ws, (total_seqs * (rank + 1)) // ws
-    with torch.inference_mode():
+    with torch.no_grad():
         for i in range(my_s, my_e):
             raw = val_tokens[i*seq_len:i*seq_len+seq_len+1].to(device, dtype=torch.int64)
             x, y = raw[:-1].view(1, -1), raw[1:].view(1, -1)
