@@ -103,43 +103,50 @@ jobs:
       - name: 🏋️ Training on Pod (Conditional 3-Seed)
         run: |
           ssh -i ~/.ssh/id_ed25519 root@${{ steps.manage.outputs.ip }} -p ${{ steps.manage.outputs.port }} "bash -c '
-            mkdir -p /workspace && cd /workspace && \
-            [ ! -d \"project_golf\" ] && git clone -b main https://github.com/${{ github.repository }}.git project_golf || (cd project_golf && git fetch origin && git reset --hard origin/main); \
-            cd /workspace/project_golf && SOTA=\$(python3 runpod/get_sota.py); \
-            echo \"Current SOTA: \$SOTA\" && \
-            cd /workspace && [ ! -d \"parameter-golf\" ] && git clone https://github.com/openai/parameter-golf.git || true; \
-            cp project_golf/train_gpt.py parameter-golf/train_gpt.py && cd parameter-golf && \
-            python3 data/cached_challenge_fineweb.py --variant sp1024 && \
+            set -e
+            mkdir -p /workspace/parameter-golf && cd /workspace/parameter-golf
+            [ ! -d \"project_golf_ball\" ] && git clone -b main https://github.com/${{ github.repository }}.git project_golf_ball || (cd project_golf_ball && git fetch origin && git reset --hard origin/main)
             
-            # --- SEED LOOP ---
+            SOTA=\$(python3 project_golf_ball/runpod/get_sota.py)
+            echo \"Current SOTA: \$SOTA\"
+            
+            [ ! -d \"openai-golf\" ] && git clone https://github.com/openai/parameter-golf.git openai-golf || true
+            cp project_golf_ball/train_gpt.py openai-golf/train_gpt.py && cd openai-golf
+            python3 data/cached_challenge_fineweb.py --variant sp1024
+            
             RESULTS=\"\"
             for SEED in 0 1 2; do
               echo \"🚀 Starting Seed: \$SEED\"
               export SEED=\$SEED
-              torchrun --standalone --nproc_per_node=${{ github.event.inputs.gpu_count }} train_gpt.py > \"train_seed_\$SEED.log\" 2>&1
+              # Stream output to GHA console while also saving to a file
+              stdbuf -oL torchrun --standalone --nproc_per_node=${{ github.event.inputs.gpu_count }} train_gpt.py 2>&1 | tee \"train_seed_\$SEED.log\"
               
-              BPB=\$(grep \"Final TTT BPB:\" \"train_seed_\$SEED.log\" | tail -1 | awk \"{print \\\$NF}\")
+              BPB=\$(grep \"Final TTT BPB:\" \"train_seed_\$SEED.log\" | tail -1 | awk \"{print \\\$NF}\" || echo \"\")
+              
+              if [ -z \"\$BPB\" ]; then
+                echo \"❌ Seed \$SEED crashed or produced no score. Stopping.\"
+                break
+              fi
+
               echo \"Seed \$SEED BPB: \$BPB\"
               RESULTS=\"\$RESULTS \$BPB\"
               
               if [ \"\$SEED\" == \"0\" ]; then
-                # Worthiness Check: Seed 0 must be close to or better than SOTA (+0.015 buffer)
                 WORTHY=\$(python3 -c \"print(float('\$BPB') < (float('\$SOTA') + 0.015))\")
                 if [ \"\$WORTHY\" != \"True\" ]; then
-                  echo \"⚠️ Seed 0 result (\$BPB) not worthy of full 3-seed evaluation (SOTA \$SOTA). Stopping.\"
+                  echo \"⚠️ Seed 0 (\$BPB) NOT worthy of 3-seed evaluation (SOTA \$SOTA). Aborting.\"
                   break
                 fi
-                echo \"✅ Seed 0 looks worthy! Continuing with seeds 1 and 2...\"
+                echo \"✅ Seed 0 looks worthy! Continuing...\"
               fi
             done
-            echo \"ALL_RESULTS: \$RESULTS\" > /workspace/parameter-golf/results.summary
+            echo \"\$RESULTS\" > /workspace/parameter-golf/results.summary
           '" > train_overall.log 2>&1
           cat train_overall.log
 
       - name: Create Summary
         run: |
-          # 1. Parse results.summary back through SSH
-          RESULTS=$(ssh -i ~/.ssh/id_ed25519 root@${{ steps.manage.outputs.ip }} -p ${{ steps.manage.outputs.port }} "cat /workspace/parameter-golf/results.summary | cut -d: -f2")
+          RESULTS=$(ssh -i ~/.ssh/id_ed25519 root@${{ steps.manage.outputs.ip }} -p ${{ steps.manage.outputs.port }} "cat /workspace/parameter-golf/results.summary")
           echo "### Challenge Results 🚀" >> $GITHUB_STEP_SUMMARY
           
           COUNT=0; TOTAL=0; 
@@ -152,9 +159,6 @@ jobs:
           if [ "$COUNT" -gt 0 ]; then
             MEAN=$(echo "$TOTAL / $COUNT" | bc -l | xargs printf "%.4f")
             echo "- **Mean BPB ($COUNT seeds)**: **$MEAN**" >> $GITHUB_STEP_SUMMARY
-            if [ "$COUNT" -eq 3 ]; then
-              echo "✅ Full 3-Seed Evaluation Complete." >> $GITHUB_STEP_SUMMARY
-            fi
           fi
 
       - name: 🚀 Submit PR
@@ -162,7 +166,7 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GH_PAT_SUBMISSION }}
         run: |
-          RESULTS=$(ssh -i ~/.ssh/id_ed25519 root@${{ steps.manage.outputs.ip }} -p ${{ steps.manage.outputs.port }} "cat /workspace/parameter-golf/results.summary | cut -d: -f2")
+          RESULTS=$(ssh -i ~/.ssh/id_ed25519 root@${{ steps.manage.outputs.ip }} -p ${{ steps.manage.outputs.port }} "cat /workspace/parameter-golf/results.summary")
           python3 runpod/generate_pr_description.py "$RESULTS"
           
           # Check if PR already exists for this branch to avoid duplicates

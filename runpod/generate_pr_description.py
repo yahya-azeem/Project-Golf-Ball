@@ -13,13 +13,15 @@ def generate_description(results_summary, project_md_path):
     
     # 2. Format results
     # results_summary is expected to be "Seed 0: 0.XXXX Seed 1: 0.XXXX Seed 2: 0.XXXX"
-    seeds = results_summary.strip().split()
+    if not seeds:
+        return "Parameter Golf: Aborted/Failed Run", "No training seeds were detected. This usually indicates a crash before the first evaluation or an early worthiness abort."
+
     results_table = "| Seed | BPB |\n|------|-----|\n"
     total = 0
     for i, val in enumerate(seeds):
         results_table += f"| {i} | {val} |\n"
         total += float(val)
-    
+
     mean_bpb = total / len(seeds)
     is_record = len(seeds) == 3
     
