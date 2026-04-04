@@ -116,11 +116,6 @@ class Hyperparameters:
     ttt_batch_seqs = 32
     ttt_grad_clip = 1.0
 
-# --- SEEDING ---
-torch.manual_seed(Hyperparameters.seed)
-torch.cuda.manual_seed_all(Hyperparameters.seed)
-np.random.seed(Hyperparameters.seed)
-random.seed(Hyperparameters.seed)
 
 # --- Batched Newton-Schulz orthogonalization ---
 
@@ -518,7 +513,7 @@ def eval_val_sliding_ttt(args: Hyperparameters, model: nn.Module, rank: int, wor
         c_start, c_end = ci * ttt_chunk, min((ci + 1) * ttt_chunk, total)
         # SCORE (Inference)
         model.eval()
-        with torch.inference_mode():
+        with torch.no_grad():
             # Sliding window scoring across the chunk
             for ws_coord in range(c_start, c_end, stride):
                 end_coord = min(ws_coord + seq_len, total)
@@ -568,6 +563,12 @@ def main():
     else:
         rank, ws, local_rank = 0, 1, 0
     device = torch.device("cuda", local_rank)
+    
+    # --- SEEDING (after dist init) ---
+    torch.manual_seed(args.seed)
+    torch.cuda.manual_seed_all(args.seed)
+    np.random.seed(args.seed)
+    random.seed(args.seed)
     
     if rank == 0: print(f"Starting Project Golf Ball | Run ID: {args.run_id}")
     
