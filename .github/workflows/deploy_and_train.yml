@@ -52,15 +52,28 @@ jobs:
           fi
 
           # 2. Resume or Deploy
+          NEEDS_WAIT=false
           if [ ! -z "$POD_ID" ] && [ "$POD_ID" != "null" ]; then
+            # Resume existing pod — manage_pod.py --resume already waits for SSH
             python runpod/manage_pod.py --resume "$POD_ID" --gpu_count ${{ github.event.inputs.gpu_count }} --json > pod_info.json
           else
+            # Fresh deploy — run_challenge.py only returns pod_id, NOT ip/port
             [ ! -z "$SECRET_VOLUME_ID" ] && VOL_ARG="--network_volume_id $SECRET_VOLUME_ID" || VOL_ARG=""
             PUB_KEY=$(cat runpod/ssh_key.pub)
             python runpod/run_challenge.py --json --count ${{ github.event.inputs.gpu_count }} --template t7iu9ugzpi --ssh_public_key "$PUB_KEY" $VOL_ARG > pod_info.json
+            NEEDS_WAIT=true
           fi
-          
+
           cat pod_info.json
+          POD_ID=$(jq -r .pod_id pod_info.json)
+
+          # 3. For fresh deploys, wait for full SSH readiness (API + socket)
+          if [ "$NEEDS_WAIT" = "true" ]; then
+            echo "🔄 Fresh deploy detected — waiting for SSH readiness..."
+            python runpod/manage_pod.py --wait "$POD_ID" --json > pod_info.json
+            cat pod_info.json
+          fi
+
           echo "pod_id=$(jq -r .pod_id pod_info.json)" >> $GITHUB_OUTPUT
           echo "ip=$(jq -r .ip pod_info.json)" >> $GITHUB_OUTPUT
           echo "port=$(jq -r .port pod_info.json)" >> $GITHUB_OUTPUT
@@ -70,7 +83,21 @@ jobs:
           mkdir -p ~/.ssh
           echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_ed25519
           chmod 600 ~/.ssh/id_ed25519
-          ssh-keyscan -o StrictHostKeyChecking=no -p ${{ steps.manage.outputs.port }} ${{ steps.manage.outputs.ip }} >> ~/.ssh/known_hosts
+
+          # Retry ssh-keyscan up to 5 times (SSH may still be initializing host keys)
+          for i in 1 2 3 4 5; do
+            echo "ssh-keyscan attempt $i..."
+            ssh-keyscan -p ${{ steps.manage.outputs.port }} ${{ steps.manage.outputs.ip }} >> ~/.ssh/known_hosts 2>/dev/null && break
+            echo "ssh-keyscan failed, retrying in 10s..."
+            sleep 10
+          done
+
+          # Fallback: disable strict host key checking if keyscan still failed
+          if [ ! -s ~/.ssh/known_hosts ]; then
+            echo "⚠️ ssh-keyscan failed after retries, disabling StrictHostKeyChecking"
+            echo -e "Host *\n  StrictHostKeyChecking no\n  UserKnownHostsFile /dev/null" >> ~/.ssh/config
+            chmod 600 ~/.ssh/config
+          fi
 
       - name: 🏋️ Training on Pod (Conditional 3-Seed)
         run: |
