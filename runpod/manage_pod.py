@@ -153,7 +153,7 @@ def main():
     elif args.wait:
         # Full readiness wait: API reports running + SSH port is reachable
         pod_id = args.wait
-        pod = wait_for_pod(pod_id, timeout=300)
+        pod = wait_for_pod(pod_id)
         if not pod:
             print(json.dumps({"error": "Pod never became ready (API timeout)"}), file=sys.stdout)
             sys.exit(1)
