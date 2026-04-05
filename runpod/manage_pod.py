@@ -176,7 +176,7 @@ def main():
         # First ensure it's started
         resume_pod_rest(pod_id)
 
-        # Wait for IP/Port via API
+        # Wait for IP/Port (timeout defaulted to 600 in the function)
         pod = wait_for_pod(pod_id)
         if not pod:
             sys.exit(1)
