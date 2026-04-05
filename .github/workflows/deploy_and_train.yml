@@ -30,10 +30,15 @@ jobs:
         run: |
           pip install requests numpy torch sentencepiece
 
+      - name: 🛡️ Script Verification
+        run: |
+          echo "🔍 Verifying Python scripts syntax..."
+          python3 -m py_compile runpod/manage_pod.py runpod/run_challenge.py
+
       - name: 🛡️ CPU Validation
         if: github.event.inputs.skip_cpu_test != 'true'
         run: |
-          PYTHONPATH=. python runpod/cpu_test.py
+          PYTHONPATH=. python3 runpod/cpu_test.py
 
       - name: 🛰️ Resume or Deploy RunPod
         id: manage
@@ -42,10 +47,10 @@ jobs:
           SECRET_POD_ID: ${{ secrets.RUNPOD_POD_ID }}
           SECRET_VOLUME_ID: ${{ secrets.RUNPOD_NETWORK_VOLUME_ID }}
         run: |
-          # 1. Determine Pod ID
+          # 1. Determine Pod ID (Secret or Discovery)
           POD_ID="$SECRET_POD_ID"
           if [ -z "$POD_ID" ] || [ "$POD_ID" == "null" ]; then
-            DIS_POD=$(python runpod/manage_pod.py --find-pod --gpu_count ${{ github.event.inputs.gpu_count }} --json || echo '{"error": "not found"}')
+            DIS_POD=$(python3 runpod/manage_pod.py --find-pod --gpu_count ${{ github.event.inputs.gpu_count }} --json || echo '{"error": "not found"}')
             if echo "$DIS_POD" | jq -e '.id' >/dev/null 2>&1; then
               POD_ID=$(echo "$DIS_POD" | jq -r .id)
             fi
@@ -54,13 +59,14 @@ jobs:
           # 2. Resume or Deploy
           NEEDS_WAIT=false
           if [ ! -z "$POD_ID" ] && [ "$POD_ID" != "null" ]; then
-            # Resume existing pod — manage_pod.py --resume already waits for SSH
-            python runpod/manage_pod.py --resume "$POD_ID" --gpu_count ${{ github.event.inputs.gpu_count }} --json > pod_info.json
+            echo "🔄 Resuming existing pod $POD_ID..."
+            python3 runpod/manage_pod.py --resume "$POD_ID" --gpu_count ${{ github.event.inputs.gpu_count }} --json > pod_info.json
           else
-            # Fresh deploy — run_challenge.py only returns pod_id, NOT ip/port
+            echo "🆕 Deploying new pod using 'Project Golf (H100 Optimized)' template..."
             [ ! -z "$SECRET_VOLUME_ID" ] && VOL_ARG="--network_volume_id $SECRET_VOLUME_ID" || VOL_ARG=""
             PUB_KEY=$(cat runpod/ssh_key.pub)
-            python runpod/run_challenge.py --json --count ${{ github.event.inputs.gpu_count }} --template t7iu9ugzpi --ssh_public_key "$PUB_KEY" $VOL_ARG > pod_info.json
+            # Use name 'Project Golf (H100 Optimized)' - script will resolve ID automatically
+            python3 runpod/run_challenge.py --json --count ${{ github.event.inputs.gpu_count }} --template "Project Golf (H100 Optimized)" --ssh_public_key "$PUB_KEY" $VOL_ARG > pod_info.json
             NEEDS_WAIT=true
           fi
 
@@ -69,8 +75,8 @@ jobs:
 
           # 3. For fresh deploys, wait for full SSH readiness (API + socket)
           if [ "$NEEDS_WAIT" = "true" ]; then
-            echo "🔄 Fresh deploy detected — waiting for SSH readiness..."
-            python runpod/manage_pod.py --wait "$POD_ID" --json > pod_info.json
+            echo "🔄 Fresh deploy detected — waiting for SSH readiness (up to 10 mins)..."
+            python3 runpod/manage_pod.py --wait "$POD_ID" --json > pod_info.json
             cat pod_info.json
           fi
 
@@ -84,91 +90,58 @@ jobs:
           echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_ed25519
           chmod 600 ~/.ssh/id_ed25519
 
-          # Retry ssh-keyscan up to 5 times (SSH may still be initializing host keys)
-          for i in 1 2 3 4 5; do
+          # Retry ssh-keyscan with aggressive backoff (total ~2 mins)
+          IP="${{ steps.manage.outputs.ip }}"
+          PORT="${{ steps.manage.outputs.port }}"
+          echo "🔍 Scanning host keys for $IP:$PORT"
+          
+          for i in {1..12}; do
             echo "ssh-keyscan attempt $i..."
-            ssh-keyscan -p ${{ steps.manage.outputs.port }} ${{ steps.manage.outputs.ip }} >> ~/.ssh/known_hosts 2>/dev/null && break
-            echo "ssh-keyscan failed, retrying in 10s..."
+            ssh-keyscan -p $PORT $IP >> ~/.ssh/known_hosts 2>/dev/null && [ -s ~/.ssh/known_hosts ] && break
+            echo "ssh-keyscan failed or empty, retrying in 10s..."
             sleep 10
           done
 
           # Fallback: disable strict host key checking if keyscan still failed
           if [ ! -s ~/.ssh/known_hosts ]; then
-            echo "⚠️ ssh-keyscan failed after retries, disabling StrictHostKeyChecking"
+            echo "⚠️ ssh-keyscan failed after 12 retries, disabling StrictHostKeyChecking"
             echo -e "Host *\n  StrictHostKeyChecking no\n  UserKnownHostsFile /dev/null" >> ~/.ssh/config
             chmod 600 ~/.ssh/config
           fi
 
-      - name: 🏋️ Training on Pod (Conditional 3-Seed)
+      - name: 🏋️ Training on Pod
         run: |
-          # Use -tt for real-time streaming to GHA console
-          ssh -tt -i ~/.ssh/id_ed25519 root@${{ steps.manage.outputs.ip }} -p ${{ steps.manage.outputs.port }} "bash -c '
-            set -e
-            export PYTHONUNBUFFERED=1
-            mkdir -p /workspace/parameter-golf && cd /workspace/parameter-golf
-            [ ! -d \"project_golf_ball\" ] && git clone -b main https://github.com/${{ github.repository }}.git project_golf_ball || (cd project_golf_ball && git fetch origin && git reset --hard origin/main)
-            
-            SOTA=\$(python3 project_golf_ball/runpod/get_sota.py)
-            echo \"Current SOTA: \$SOTA\"
-            
-            [ ! -d \"openai-golf\" ] && git clone https://github.com/openai/parameter-golf.git openai-golf || true
-            cp project_golf_ball/train_gpt.py openai-golf/train_gpt.py && cd openai-golf
-            python3 data/cached_challenge_fineweb.py --variant sp1024
-            
-            FINAL_RESULTS=\"\"
-            for SEED in 0 1 2; do
-              echo \"🚀 Starting Seed: \$SEED\"
-              export SEED=\$SEED
-              torchrun --standalone --nproc_per_node=${{ github.event.inputs.gpu_count }} train_gpt.py 2>&1 | tee train_seed_\$SEED.log
-              
-              BPB=\$(grep \"Final TTT BPB:\" train_seed_\$SEED.log | tail -1 | awk \"{print \\\$NF}\" || echo \"\")
-              if [ -z \"\$BPB\" ]; then
-                echo \"❌ Seed \$SEED failed. Check logs above.\"
-                break
-              fi
-              
-              echo \"Seed \$SEED BPB: \$BPB\"
-              FINAL_RESULTS=\"\$FINAL_RESULTS \$BPB\"
-              
-              if [ \"\$SEED\" == \"0\" ]; then
-                WORTHY=\$(python3 -c \"print(float('\$BPB') < (float('\$SOTA') + 0.015))\")
-                if [ \"\$WORTHY\" != \"True\" ]; then
-                  echo \"⚠️ Seed 0 (\$BPB) not worthy. Aborting.\"
-                  break
-                fi
-              fi
-            done
-            echo \"\$FINAL_RESULTS\" > /workspace/parameter-golf/results.summary
+          IP="${{ steps.manage.outputs.ip }}"
+          PORT="${{ steps.manage.outputs.port }}"
+          echo "🚀 Training starting on $IP:$PORT"
+          
+          # Use ssh -tt for pseudo-terminal to ensure real-time streaming logs
+          ssh -tt -i ~/.ssh/id_ed25519 root@$IP -p $PORT "bash -c '
+            cd /workspace/Project-Golf-Ball &&
+            git pull origin main &&
+            PYTHONUNBUFFERED=1 ./train_all.sh ${{ github.event.inputs.gpu_count }}
           '"
+          
+          echo "✅ Training session completed."
 
-      - name: Create Summary
-        run: |
-          RESULTS=$(ssh -i ~/.ssh/id_ed25519 root@${{ steps.manage.outputs.ip }} -p ${{ steps.manage.outputs.port }} "cat /workspace/parameter-golf/results.summary")
-          echo "### Challenge Results 🚀" >> $GITHUB_STEP_SUMMARY
-          echo "Seeds: $RESULTS" >> $GITHUB_STEP_SUMMARY
-
-      - name: 🚀 Submit PR
-        if: always() && steps.manage.outputs.pod_id != ''
-        env:
-          GH_TOKEN: ${{ secrets.GH_PAT_SUBMISSION }}
-        run: |
-          scp -i ~/.ssh/id_ed25519 -P ${{ steps.manage.outputs.port }} -o StrictHostKeyChecking=no root@${{ steps.manage.outputs.ip }}:/workspace/parameter-golf/results.summary ./results.summary || echo "" > results.summary
-          RESULTS=$(cat results.summary)
-          python3 runpod/generate_pr_description.py "$RESULTS"
-          BRANCH_NAME="results/run-${{ github.run_id }}"
-          git checkout -b "$BRANCH_NAME"
-          echo "$RESULTS" > last_results.txt
-          git config user.name "Project Golf CI/CD"
-          git config user.email "ci-cd@project-golf.ball"
-          git add last_results.txt
-          git commit -m "Results for run ${{ github.run_id }}: $RESULTS"
-          git push origin "$BRANCH_NAME"
-          gh pr create --title "$(cat pr_title.txt)" --body-file pr_body.md --head "$BRANCH_NAME" --base main --draft=false
-
-      - name: 💤 Cleanup
+      - name: 🤖 Submit PR with Results
         if: always()
         env:
-          RUNPOD_API_KEY: ${{ secrets.RUNPOD_API_KEY }}
+          GH_PAT_SUBMISSION: ${{ secrets.GH_PAT_SUBMISSION }}
         run: |
-          POD_ID="${{ steps.manage.outputs.pod_id }}"
-          python runpod/run_challenge.py --terminate "$POD_ID" || true
+          IP="${{ steps.manage.outputs.ip }}"
+          PORT="${{ steps.manage.outputs.port }}"
+          echo "📦 Syncing results from pod..."
+          scp -i ~/.ssh/id_ed25519 -P $PORT -o StrictHostKeyChecking=no root@$IP:/workspace/Project-Golf-Ball/results_summary.json . || echo "{}" > results_summary.json
+          
+          echo "📝 Generating PR description..."
+          python3 runpod/generate_pr_description.py "results_summary.json" > pr_body.txt
+          
+          # Automated result submission logic
+          git checkout -b results/run-${{ github.run_id }}
+          git add results_summary.json
+          git commit -m "Submit results for run ${{ github.run_id }}" || echo "No results to commit"
+          git push origin results/run-${{ github.run_id }}
+          
+          echo "🛰️ Creating Pull Request..."
+          gh pr create --title "Run Results #${{ github.run_id }}" --body-file pr_body.txt --base main --head results/run-${{ github.run_id }}
