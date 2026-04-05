@@ -80,7 +80,7 @@ def find_pod(count=8):
             return pod
     return None
 
-def wait_for_pod(pod_id, timeout=300):
+def wait_for_pod(pod_id, timeout=600):
     """Wait for RunPod API to report the pod as running with SSH port mapped."""
     start_time = time.time()
     print(f"⏳ Waiting for pod {pod_id} to report SSH readiness via API (timeout={timeout}s)...", file=sys.stderr)
