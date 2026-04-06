@@ -1,0 +1,189 @@
+﻿check	Set up job	∩╗┐2026-04-06T02:42:15.6150187Z Current runner version: '2.333.1'
+check	Set up job	2026-04-06T02:42:15.6178563Z ##[group]Runner Image Provisioner
+check	Set up job	2026-04-06T02:42:15.6179709Z Hosted Compute Agent
+check	Set up job	2026-04-06T02:42:15.6180369Z Version: 20260213.493
+check	Set up job	2026-04-06T02:42:15.6180972Z Commit: 5c115507f6dd24b8de37d8bbe0bb4509d0cc0fa3
+check	Set up job	2026-04-06T02:42:15.6181724Z Build Date: 2026-02-13T00:28:41Z
+check	Set up job	2026-04-06T02:42:15.6182427Z Worker ID: {e10189f3-d01b-48b6-80b4-4bf2e27a5f9d}
+check	Set up job	2026-04-06T02:42:15.6183100Z Azure Region: westus
+check	Set up job	2026-04-06T02:42:15.6183640Z ##[endgroup]
+check	Set up job	2026-04-06T02:42:15.6185092Z ##[group]Operating System
+check	Set up job	2026-04-06T02:42:15.6185806Z Ubuntu
+check	Set up job	2026-04-06T02:42:15.6186315Z 24.04.4
+check	Set up job	2026-04-06T02:42:15.6186779Z LTS
+check	Set up job	2026-04-06T02:42:15.6187319Z ##[endgroup]
+check	Set up job	2026-04-06T02:42:15.6187791Z ##[group]Runner Image
+check	Set up job	2026-04-06T02:42:15.6188313Z Image: ubuntu-24.04
+check	Set up job	2026-04-06T02:42:15.6188894Z Version: 20260329.72.1
+check	Set up job	2026-04-06T02:42:15.6190460Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20260329.72/images/ubuntu/Ubuntu2404-Readme.md
+check	Set up job	2026-04-06T02:42:15.6192272Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20260329.72
+check	Set up job	2026-04-06T02:42:15.6193168Z ##[endgroup]
+check	Set up job	2026-04-06T02:42:15.6194303Z ##[group]GITHUB_TOKEN Permissions
+check	Set up job	2026-04-06T02:42:15.6196387Z Contents: read
+check	Set up job	2026-04-06T02:42:15.6196966Z Metadata: read
+check	Set up job	2026-04-06T02:42:15.6197555Z Packages: read
+check	Set up job	2026-04-06T02:42:15.6198067Z ##[endgroup]
+check	Set up job	2026-04-06T02:42:15.6200644Z Secret source: Actions
+check	Set up job	2026-04-06T02:42:15.6201565Z Prepare workflow directory
+check	Set up job	2026-04-06T02:42:15.6624042Z Prepare all required actions
+check	Set up job	2026-04-06T02:42:15.6669660Z Getting action download info
+check	Set up job	2026-04-06T02:42:16.1228428Z Download action repository 'actions/checkout@v4' (SHA:34e114876b0b11c390a56381ad16ebd13914f8d5)
+check	Set up job	2026-04-06T02:42:16.2278424Z Download action repository 'actions/setup-python@v5' (SHA:a26af69be951a213d495a4c3e4e4022e16d87065)
+check	Set up job	2026-04-06T02:42:16.4067475Z Complete job name: check
+check	Run actions/checkout@v4	∩╗┐2026-04-06T02:42:16.4763848Z ##[group]Run actions/checkout@v4
+check	Run actions/checkout@v4	2026-04-06T02:42:16.4764714Z with:
+check	Run actions/checkout@v4	2026-04-06T02:42:16.4765172Z   repository: yahya-azeem/Project-Golf-Ball
+check	Run actions/checkout@v4	2026-04-06T02:42:16.4765909Z   token: ***
+check	Run actions/checkout@v4	2026-04-06T02:42:16.4766288Z   ssh-strict: true
+check	Run actions/checkout@v4	2026-04-06T02:42:16.4766673Z   ssh-user: git
+check	Run actions/checkout@v4	2026-04-06T02:42:16.4767071Z   persist-credentials: true
+check	Run actions/checkout@v4	2026-04-06T02:42:16.4767507Z   clean: true
+check	Run actions/checkout@v4	2026-04-06T02:42:16.4767905Z   sparse-checkout-cone-mode: true
+check	Run actions/checkout@v4	2026-04-06T02:42:16.4768389Z   fetch-depth: 1
+check	Run actions/checkout@v4	2026-04-06T02:42:16.4768762Z   fetch-tags: false
+check	Run actions/checkout@v4	2026-04-06T02:42:16.4769366Z   show-progress: true
+check	Run actions/checkout@v4	2026-04-06T02:42:16.4769783Z   lfs: false
+check	Run actions/checkout@v4	2026-04-06T02:42:16.4770148Z   submodules: false
+check	Run actions/checkout@v4	2026-04-06T02:42:16.4770558Z   set-safe-directory: true
+check	Run actions/checkout@v4	2026-04-06T02:42:16.4771609Z ##[endgroup]
+check	Run actions/checkout@v4	2026-04-06T02:42:16.5866825Z Syncing repository: yahya-azeem/Project-Golf-Ball
+check	Run actions/checkout@v4	2026-04-06T02:42:16.5868710Z ##[group]Getting Git version info
+check	Run actions/checkout@v4	2026-04-06T02:42:16.5869840Z Working directory is '/home/runner/work/Project-Golf-Ball/Project-Golf-Ball'
+check	Run actions/checkout@v4	2026-04-06T02:42:16.5871031Z [command]/usr/bin/git version
+check	Run actions/checkout@v4	2026-04-06T02:42:16.5920969Z git version 2.53.0
+check	Run actions/checkout@v4	2026-04-06T02:42:16.5950627Z ##[endgroup]
+check	Run actions/checkout@v4	2026-04-06T02:42:16.5965802Z Temporarily overriding HOME='/home/runner/work/_temp/f23b083e-7bda-4195-84ce-93b87d1c07af' before making global git config changes
+check	Run actions/checkout@v4	2026-04-06T02:42:16.5967193Z Adding repository directory to the temporary git global config as a safe directory
+check	Run actions/checkout@v4	2026-04-06T02:42:16.5980263Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/Project-Golf-Ball/Project-Golf-Ball
+check	Run actions/checkout@v4	2026-04-06T02:42:16.6014524Z Deleting the contents of '/home/runner/work/Project-Golf-Ball/Project-Golf-Ball'
+check	Run actions/checkout@v4	2026-04-06T02:42:16.6018039Z ##[group]Initializing the repository
+check	Run actions/checkout@v4	2026-04-06T02:42:16.6022547Z [command]/usr/bin/git init /home/runner/work/Project-Golf-Ball/Project-Golf-Ball
+check	Run actions/checkout@v4	2026-04-06T02:42:16.6116384Z hint: Using 'master' as the name for the initial branch. This default branch name
+check	Run actions/checkout@v4	2026-04-06T02:42:16.6118265Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+check	Run actions/checkout@v4	2026-04-06T02:42:16.6120600Z hint: to use in all of your new repositories, which will suppress this warning,
+check	Run actions/checkout@v4	2026-04-06T02:42:16.6122475Z hint: call:
+check	Run actions/checkout@v4	2026-04-06T02:42:16.6123198Z hint:
+check	Run actions/checkout@v4	2026-04-06T02:42:16.6124445Z hint: 	git config --global init.defaultBranch <name>
+check	Run actions/checkout@v4	2026-04-06T02:42:16.6125730Z hint:
+check	Run actions/checkout@v4	2026-04-06T02:42:16.6126867Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+check	Run actions/checkout@v4	2026-04-06T02:42:16.6128647Z hint: 'development'. The just-created branch can be renamed via this command:
+check	Run actions/checkout@v4	2026-04-06T02:42:16.6130208Z hint:
+check	Run actions/checkout@v4	2026-04-06T02:42:16.6130936Z hint: 	git branch -m <name>
+check	Run actions/checkout@v4	2026-04-06T02:42:16.6131773Z hint:
+check	Run actions/checkout@v4	2026-04-06T02:42:16.6132835Z hint: Disable this message with "git config set advice.defaultBranchName false"
+check	Run actions/checkout@v4	2026-04-06T02:42:16.6134745Z Initialized empty Git repository in /home/runner/work/Project-Golf-Ball/Project-Golf-Ball/.git/
+check	Run actions/checkout@v4	2026-04-06T02:42:16.6137507Z [command]/usr/bin/git remote add origin https://github.com/yahya-azeem/Project-Golf-Ball
+check	Run actions/checkout@v4	2026-04-06T02:42:16.6163540Z ##[endgroup]
+check	Run actions/checkout@v4	2026-04-06T02:42:16.6164802Z ##[group]Disabling automatic garbage collection
+check	Run actions/checkout@v4	2026-04-06T02:42:16.6168602Z [command]/usr/bin/git config --local gc.auto 0
+check	Run actions/checkout@v4	2026-04-06T02:42:16.6196874Z ##[endgroup]
+check	Run actions/checkout@v4	2026-04-06T02:42:16.6198089Z ##[group]Setting up auth
+check	Run actions/checkout@v4	2026-04-06T02:42:16.6204672Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+check	Run actions/checkout@v4	2026-04-06T02:42:16.6235636Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+check	Run actions/checkout@v4	2026-04-06T02:42:16.6537798Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+check	Run actions/checkout@v4	2026-04-06T02:42:16.6572235Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+check	Run actions/checkout@v4	2026-04-06T02:42:16.6815551Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+check	Run actions/checkout@v4	2026-04-06T02:42:16.6853376Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+check	Run actions/checkout@v4	2026-04-06T02:42:16.7122643Z [command]/usr/bin/git config --local http.https://github.com/.extraheader AUTHORIZATION: basic ***
+check	Run actions/checkout@v4	2026-04-06T02:42:16.7181976Z ##[endgroup]
+check	Run actions/checkout@v4	2026-04-06T02:42:16.7183391Z ##[group]Fetching the repository
+check	Run actions/checkout@v4	2026-04-06T02:42:16.7194277Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +fcb927b36a0bfdf4a3e81e6713ce3d3055859b7b:refs/remotes/origin/main
+check	Run actions/checkout@v4	2026-04-06T02:42:17.1473901Z From https://github.com/yahya-azeem/Project-Golf-Ball
+check	Run actions/checkout@v4	2026-04-06T02:42:17.1475050Z  * [new ref]         fcb927b36a0bfdf4a3e81e6713ce3d3055859b7b -> origin/main
+check	Run actions/checkout@v4	2026-04-06T02:42:17.1502377Z ##[endgroup]
+check	Run actions/checkout@v4	2026-04-06T02:42:17.1503112Z ##[group]Determining the checkout info
+check	Run actions/checkout@v4	2026-04-06T02:42:17.1505784Z ##[endgroup]
+check	Run actions/checkout@v4	2026-04-06T02:42:17.1512168Z [command]/usr/bin/git sparse-checkout disable
+check	Run actions/checkout@v4	2026-04-06T02:42:17.1549429Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+check	Run actions/checkout@v4	2026-04-06T02:42:17.1574554Z ##[group]Checking out the ref
+check	Run actions/checkout@v4	2026-04-06T02:42:17.1578923Z [command]/usr/bin/git checkout --progress --force -B main refs/remotes/origin/main
+check	Run actions/checkout@v4	2026-04-06T02:42:17.1664843Z Switched to a new branch 'main'
+check	Run actions/checkout@v4	2026-04-06T02:42:17.1667473Z branch 'main' set up to track 'origin/main'.
+check	Run actions/checkout@v4	2026-04-06T02:42:17.1674077Z ##[endgroup]
+check	Run actions/checkout@v4	2026-04-06T02:42:17.1707178Z [command]/usr/bin/git log -1 --format=%H
+check	Run actions/checkout@v4	2026-04-06T02:42:17.1728455Z fcb927b36a0bfdf4a3e81e6713ce3d3055859b7b
+check	Setup Python	∩╗┐2026-04-06T02:42:17.1971057Z ##[group]Run actions/setup-python@v5
+check	Setup Python	2026-04-06T02:42:17.1971626Z with:
+check	Setup Python	2026-04-06T02:42:17.1971995Z   python-version: 3.10
+check	Setup Python	2026-04-06T02:42:17.1972422Z   check-latest: false
+check	Setup Python	2026-04-06T02:42:17.1972961Z   token: ***
+check	Setup Python	2026-04-06T02:42:17.1973340Z   update-environment: true
+check	Setup Python	2026-04-06T02:42:17.1973785Z   allow-prereleases: false
+check	Setup Python	2026-04-06T02:42:17.1974208Z   freethreaded: false
+check	Setup Python	2026-04-06T02:42:17.1974874Z ##[endgroup]
+check	Setup Python	2026-04-06T02:42:17.3660404Z ##[group]Installed versions
+check	Setup Python	2026-04-06T02:42:17.3774536Z Successfully set up CPython (3.10.20)
+check	Setup Python	2026-04-06T02:42:17.3776541Z ##[endgroup]
+check	Install requests	∩╗┐2026-04-06T02:42:17.3903443Z ##[group]Run pip install requests
+check	Install requests	2026-04-06T02:42:17.3904086Z [36;1mpip install requests[0m
+check	Install requests	2026-04-06T02:42:17.3947941Z shell: /usr/bin/bash -e {0}
+check	Install requests	2026-04-06T02:42:17.3948439Z env:
+check	Install requests	2026-04-06T02:42:17.3948916Z   pythonLocation: /opt/hostedtoolcache/Python/3.10.20/x64
+check	Install requests	2026-04-06T02:42:17.3950158Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.10.20/x64/lib/pkgconfig
+check	Install requests	2026-04-06T02:42:17.3950969Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.10.20/x64
+check	Install requests	2026-04-06T02:42:17.3951682Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.10.20/x64
+check	Install requests	2026-04-06T02:42:17.3952389Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.10.20/x64
+check	Install requests	2026-04-06T02:42:17.3953090Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.10.20/x64/lib
+check	Install requests	2026-04-06T02:42:17.3953691Z ##[endgroup]
+check	Install requests	2026-04-06T02:42:18.1884050Z Collecting requests
+check	Install requests	2026-04-06T02:42:18.2450400Z   Downloading requests-2.33.1-py3-none-any.whl.metadata (4.8 kB)
+check	Install requests	2026-04-06T02:42:18.3920115Z Collecting charset_normalizer<4,>=2 (from requests)
+check	Install requests	2026-04-06T02:42:18.3960060Z   Downloading charset_normalizer-3.4.7-cp310-cp310-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl.metadata (40 kB)
+check	Install requests	2026-04-06T02:42:18.4262104Z Collecting idna<4,>=2.5 (from requests)
+check	Install requests	2026-04-06T02:42:18.4293829Z   Downloading idna-3.11-py3-none-any.whl.metadata (8.4 kB)
+check	Install requests	2026-04-06T02:42:18.4559855Z Collecting urllib3<3,>=1.26 (from requests)
+check	Install requests	2026-04-06T02:42:18.4603666Z   Downloading urllib3-2.6.3-py3-none-any.whl.metadata (6.9 kB)
+check	Install requests	2026-04-06T02:42:18.4811348Z Collecting certifi>=2023.5.7 (from requests)
+check	Install requests	2026-04-06T02:42:18.4843412Z   Downloading certifi-2026.2.25-py3-none-any.whl.metadata (2.5 kB)
+check	Install requests	2026-04-06T02:42:18.4915282Z Downloading requests-2.33.1-py3-none-any.whl (64 kB)
+check	Install requests	2026-04-06T02:42:18.4996663Z Downloading charset_normalizer-3.4.7-cp310-cp310-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl (216 kB)
+check	Install requests	2026-04-06T02:42:18.5095911Z Downloading idna-3.11-py3-none-any.whl (71 kB)
+check	Install requests	2026-04-06T02:42:18.5156016Z Downloading urllib3-2.6.3-py3-none-any.whl (131 kB)
+check	Install requests	2026-04-06T02:42:18.5218293Z Downloading certifi-2026.2.25-py3-none-any.whl (153 kB)
+check	Install requests	2026-04-06T02:42:18.5530448Z Installing collected packages: urllib3, idna, charset_normalizer, certifi, requests
+check	Install requests	2026-04-06T02:42:18.8181756Z 
+check	Install requests	2026-04-06T02:42:18.8197463Z Successfully installed certifi-2026.2.25 charset_normalizer-3.4.7 idna-3.11 requests-2.33.1 urllib3-2.6.3
+check	Check Stock	∩╗┐2026-04-06T02:42:18.9913443Z ##[group]Run python3 -c "
+check	Check Stock	2026-04-06T02:42:18.9913837Z [36;1mpython3 -c "[0m
+check	Check Stock	2026-04-06T02:42:18.9914096Z [36;1mimport requests, os, json[0m
+check	Check Stock	2026-04-06T02:42:18.9914460Z [36;1mAPI_KEY = os.environ.get('RUNPOD_API_KEY')[0m
+check	Check Stock	2026-04-06T02:42:18.9915136Z [36;1mheaders = {'Authorization': f'***'}[0m
+check	Check Stock	2026-04-06T02:42:18.9915602Z [36;1mr = requests.get('https://rest.runpod.io/v1/gpu-types', headers=headers)[0m
+check	Check Stock	2026-04-06T02:42:18.9916044Z [36;1mdata = r.json()[0m
+check	Check Stock	2026-04-06T02:42:18.9916403Z [36;1m# If data is a dict instead of list, check for a 'gpus' or similar key[0m
+check	Check Stock	2026-04-06T02:42:18.9916897Z [36;1mgpus = data if isinstance(data, list) else data.get('gpus', [])[0m
+check	Check Stock	2026-04-06T02:42:18.9917308Z [36;1mif not gpus and isinstance(data, dict):[0m
+check	Check Stock	2026-04-06T02:42:18.9917703Z [36;1m    print(f'Full Response: {json.dumps(data, indent=2)}')[0m
+check	Check Stock	2026-04-06T02:42:18.9918083Z [36;1mfor g in gpus:[0m
+check	Check Stock	2026-04-06T02:42:18.9918377Z [36;1m    name = g.get('name', 'Unknown')[0m
+check	Check Stock	2026-04-06T02:42:18.9918753Z [36;1m    id = g.get('id', 'Unknown')[0m
+check	Check Stock	2026-04-06T02:42:18.9919072Z [36;1m    if 'H100' in name or 'A100' in name:[0m
+check	Check Stock	2026-04-06T02:42:18.9920104Z [36;1m        print(f\"ID: {id}, Name: {name}, Secure: {g.get('secureStock', 0)}, Community: {g.get('communityStock', 0)}\")[0m
+check	Check Stock	2026-04-06T02:42:18.9920625Z [36;1m"[0m
+check	Check Stock	2026-04-06T02:42:18.9948805Z shell: /usr/bin/bash -e {0}
+check	Check Stock	2026-04-06T02:42:18.9949442Z env:
+check	Check Stock	2026-04-06T02:42:18.9949745Z   pythonLocation: /opt/hostedtoolcache/Python/3.10.20/x64
+check	Check Stock	2026-04-06T02:42:18.9950208Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.10.20/x64/lib/pkgconfig
+check	Check Stock	2026-04-06T02:42:18.9950650Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.10.20/x64
+check	Check Stock	2026-04-06T02:42:18.9951049Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.10.20/x64
+check	Check Stock	2026-04-06T02:42:18.9951444Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.10.20/x64
+check	Check Stock	2026-04-06T02:42:18.9951875Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.10.20/x64/lib
+check	Check Stock	2026-04-06T02:42:18.9952437Z   RUNPOD_API_KEY: ***
+check	Check Stock	2026-04-06T02:42:18.9952704Z ##[endgroup]
+check	Post Setup Python	∩╗┐2026-04-06T02:42:20.2653392Z Post job cleanup.
+check	Post Run actions/checkout@v4	∩╗┐2026-04-06T02:42:20.4307988Z Post job cleanup.
+check	Post Run actions/checkout@v4	2026-04-06T02:42:20.5237648Z [command]/usr/bin/git version
+check	Post Run actions/checkout@v4	2026-04-06T02:42:20.5274106Z git version 2.53.0
+check	Post Run actions/checkout@v4	2026-04-06T02:42:20.5317677Z Temporarily overriding HOME='/home/runner/work/_temp/4d6d7672-a3a9-48a2-a7c5-c48ef5523dcb' before making global git config changes
+check	Post Run actions/checkout@v4	2026-04-06T02:42:20.5319362Z Adding repository directory to the temporary git global config as a safe directory
+check	Post Run actions/checkout@v4	2026-04-06T02:42:20.5323955Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/Project-Golf-Ball/Project-Golf-Ball
+check	Post Run actions/checkout@v4	2026-04-06T02:42:20.5360101Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+check	Post Run actions/checkout@v4	2026-04-06T02:42:20.5392144Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+check	Post Run actions/checkout@v4	2026-04-06T02:42:20.5629736Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+check	Post Run actions/checkout@v4	2026-04-06T02:42:20.5653923Z http.https://github.com/.extraheader
+check	Post Run actions/checkout@v4	2026-04-06T02:42:20.5668492Z [command]/usr/bin/git config --local --unset-all http.https://github.com/.extraheader
+check	Post Run actions/checkout@v4	2026-04-06T02:42:20.5702019Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+check	Post Run actions/checkout@v4	2026-04-06T02:42:20.5946479Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+check	Post Run actions/checkout@v4	2026-04-06T02:42:20.5979844Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+check	Complete job	∩╗┐2026-04-06T02:42:20.6339077Z Cleaning up orphan processes
+check	Complete job	2026-04-06T02:42:20.6820040Z ##[warning]Node.js 20 actions are deprecated. The following actions are running on Node.js 20 and may not work as expected: actions/checkout@v4, actions/setup-python@v5. Actions will be forced to run with Node.js 24 by default starting June 2nd, 2026. Node.js 20 will be removed from the runner on September 16th, 2026. Please check if updated versions of these actions are available that support Node.js 24. To opt into Node.js 24 now, set the FORCE_JAVASCRIPT_ACTIONS_TO_NODE24=true environment variable on the runner or in your workflow file. Once Node.js 24 becomes the default, you can temporarily opt out by setting ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION=true. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
