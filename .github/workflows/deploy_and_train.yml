@@ -177,8 +177,10 @@ jobs:
         run: |
           POD_ID="${{ steps.manage.outputs.pod_id }}"
           if [ ! -z "$POD_ID" ] && [ "$POD_ID" != "null" ]; then
-            echo "🛑 Terminating pod $POD_ID to prevent cost leakage..."
-            python3 runpod/run_challenge.py --terminate "$POD_ID"
-          else
-            echo "ℹ️ No pod to terminate (provisioning failed early or no pod requested)."
+            echo "🛑 Terminating specific pod $POD_ID..."
+            python3 runpod/manage_pod.py --terminate "$POD_ID"
           fi
+          
+          # Final Safety: Clean up any other pods named Parameter_Golf_*
+          echo "🔍 Cleaning up any orphaned challenge pods..."
+          python3 runpod/manage_pod.py --terminate-all

@@ -95,11 +95,38 @@ def resume_pod_rest(pod_id):
         print(f"⚠️ Warning during pod start: {e}", file=sys.stderr)
         return {}
 
+def terminate_pod_rest(pod_id):
+    url = f"{REST_URL}/{pod_id}"
+    headers = {"Authorization": f"Bearer {API_KEY}"}
+    try:
+        r = requests.delete(url, headers=headers, timeout=30)
+        return r.status_code
+    except Exception as e:
+        print(f"⚠️ Error terminating {pod_id}: {e}", file=sys.stderr)
+        return 500
+
+def terminate_all_challenge_pods():
+    """List all pods and terminate those starting with 'Parameter_Golf'."""
+    headers = {"Authorization": f"Bearer {API_KEY}"}
+    try:
+        r = requests.get(REST_URL, headers=headers, timeout=30)
+        r.raise_for_status()
+        pods = r.json()
+        for pod in pods:
+            name = pod.get('name', '')
+            if name.startswith("Parameter_Golf"):
+                print(f"🛑 Terminating orphaned pod: {pod['id']} ({name})", file=sys.stderr)
+                terminate_pod_rest(pod['id'])
+    except Exception as e:
+        print(f"⚠️ Error cleaning up pods: {e}", file=sys.stderr)
+
 def main():
     parser = argparse.ArgumentParser(description="RunPod lifecycle manager")
     parser.add_argument("--find-pod", action="store_true")
     parser.add_argument("--resume", type=str, help="Pod ID to resume")
     parser.add_argument("--wait", type=str, help="Pod ID to wait for")
+    parser.add_argument("--terminate", type=str, help="Pod ID to terminate")
+    parser.add_argument("--terminate-all", action="store_true", help="Terminate all challenge pods")
     parser.add_argument("--gpu_count", type=int, default=1)
     parser.add_argument("--json", action="store_true")
     args = parser.parse_args()
@@ -109,6 +136,16 @@ def main():
         sys.exit(1)
 
     try:
+        if args.terminate_all:
+            terminate_all_challenge_pods()
+            return
+
+        if args.terminate:
+            status = terminate_pod_rest(args.terminate)
+            if args.json: print(json.dumps({"status_code": status}))
+            else: print(f"Termination request sent. Status: {status}")
+            return
+
         if args.find_pod:
             pod = find_pod(count=args.gpu_count)
             if pod:
@@ -157,6 +194,9 @@ def main():
         print(f"❌ FATAL ERROR: {str(e)}", file=sys.stderr)
         traceback.print_exc(file=sys.stderr)
         sys.exit(1)
+
+if __name__ == "__main__":
+    main()
 
 if __name__ == "__main__":
     main()
