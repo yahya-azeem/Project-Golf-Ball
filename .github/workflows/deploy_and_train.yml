@@ -15,6 +15,10 @@ on:
         description: 'Template Name or ID'
         required: false
         default: 'Project Golf (H100 Optimized)'
+      cloud_type:
+        description: 'Cloud Type (SECURE or COMMUNITY)'
+        required: false
+        default: 'SECURE'
       skip_cpu_test:
         description: 'Skip CPU Validation?'
         type: boolean
@@ -54,6 +58,7 @@ jobs:
           RUNPOD_API_KEY: ${{ secrets.RUNPOD_API_KEY }}
           SECRET_POD_ID: ${{ secrets.RUNPOD_POD_ID }}
           SECRET_VOLUME_ID: ${{ secrets.RUNPOD_NETWORK_VOLUME_ID }}
+          RUNPOD_CLOUD_TYPE: ${{ github.event.inputs.cloud_type || 'SECURE' }}
         run: |
           # 1. Determine Pod ID (Secret or Discovery)
           POD_ID="$SECRET_POD_ID"

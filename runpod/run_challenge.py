@@ -36,7 +36,7 @@ def deploy_pod_rest(gpu_type, count, template_id, volume_id=None, ssh_key=None):
         "templateId": template_id,
         "gpuCount": count,
         "gpuTypeIds": [gpu_type], 
-        "cloudType": "SECURE",
+        "cloudType": os.environ.get("RUNPOD_CLOUD_TYPE", "SECURE"),
         "env": {}
     }
     if volume_id:
