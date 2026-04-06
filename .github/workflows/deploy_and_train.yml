@@ -7,6 +7,14 @@ on:
         description: 'GPUs to use (1 for test, 8 for full training)'
         required: true
         default: '1'
+      gpu_type:
+        description: 'GPU Type ID (e.g. "NVIDIA H100 80GB HBM3")'
+        required: false
+        default: 'NVIDIA H100 80GB HBM3'
+      template_id:
+        description: 'Template Name or ID'
+        required: false
+        default: 'Project Golf (H100 Optimized)'
       skip_cpu_test:
         description: 'Skip CPU Validation?'
         type: boolean
@@ -66,7 +74,12 @@ jobs:
             [ ! -z "$SECRET_VOLUME_ID" ] && VOL_ARG="--network_volume_id $SECRET_VOLUME_ID" || VOL_ARG=""
             PUB_KEY=$(cat runpod/ssh_key.pub)
             # Use name 'Project Golf (H100 Optimized)' - script will resolve ID automatically
-            python3 runpod/run_challenge.py --json --count ${{ github.event.inputs.gpu_count }} --template "Project Golf (H100 Optimized)" --ssh_public_key "$PUB_KEY" $VOL_ARG > pod_info.json
+            python3 runpod/run_challenge.py \
+              --json \
+              --count ${{ github.event.inputs.gpu_count }} \
+              --gpu_type "${{ github.event.inputs.gpu_type || 'NVIDIA H100 80GB HBM3' }}" \
+              --template "${{ github.event.inputs.template_id || 'Project Golf (H100 Optimized)' }}" \
+              --ssh_public_key "$PUB_KEY" $VOL_ARG > pod_info.json
             NEEDS_WAIT=true
           fi
 

@@ -63,6 +63,7 @@ def terminate_pod_rest(pod_id):
 def main():
     parser = argparse.ArgumentParser(description="RunPod Challenge Deployer (REST)")
     parser.add_argument("--count", type=int, default=1, help="Number of GPUs")
+    parser.add_argument("--gpu_type", type=str, default="NVIDIA H100 80GB HBM3", help="GPU Type ID")
     parser.add_argument("--template", type=str, default="Project Golf (H100 Optimized)", help="RunPod template ID OR Name")
     parser.add_argument("--network_volume_id", type=str, help="Network Volume ID")
     parser.add_argument("--ssh_public_key", type=str, help="SSH public key string")
@@ -96,7 +97,7 @@ def main():
 
         # 2. Deploy
         # We don't specify dataCenterId as per user request to allow 'any' region
-        res = deploy_pod_rest("NVIDIA H100 80GB HBM3", args.count, template_id, args.network_volume_id, args.ssh_public_key)
+        res = deploy_pod_rest(args.gpu_type, args.count, template_id, args.network_volume_id, args.ssh_public_key)
         
         if 'id' not in res:
             if args.json: print(json.dumps(res))

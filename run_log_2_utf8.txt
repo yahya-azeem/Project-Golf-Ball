@@ -1,0 +1,399 @@
+﻿≡ƒÜÇ Validate & Train	Set up job	∩╗┐2026-04-06T01:41:38.8902047Z Current runner version: '2.333.1'
+≡ƒÜÇ Validate & Train	Set up job	2026-04-06T01:41:38.8941494Z ##[group]Runner Image Provisioner
+≡ƒÜÇ Validate & Train	Set up job	2026-04-06T01:41:38.8943075Z Hosted Compute Agent
+≡ƒÜÇ Validate & Train	Set up job	2026-04-06T01:41:38.8944519Z Version: 20260213.493
+≡ƒÜÇ Validate & Train	Set up job	2026-04-06T01:41:38.8945869Z Commit: 5c115507f6dd24b8de37d8bbe0bb4509d0cc0fa3
+≡ƒÜÇ Validate & Train	Set up job	2026-04-06T01:41:38.8947154Z Build Date: 2026-02-13T00:28:41Z
+≡ƒÜÇ Validate & Train	Set up job	2026-04-06T01:41:38.8948394Z Worker ID: {362c272f-b574-4b90-88bf-6d0b48a6a436}
+≡ƒÜÇ Validate & Train	Set up job	2026-04-06T01:41:38.8949793Z Azure Region: eastus2
+≡ƒÜÇ Validate & Train	Set up job	2026-04-06T01:41:38.8950804Z ##[endgroup]
+≡ƒÜÇ Validate & Train	Set up job	2026-04-06T01:41:38.8953156Z ##[group]Operating System
+≡ƒÜÇ Validate & Train	Set up job	2026-04-06T01:41:38.8954637Z Ubuntu
+≡ƒÜÇ Validate & Train	Set up job	2026-04-06T01:41:38.8955671Z 24.04.4
+≡ƒÜÇ Validate & Train	Set up job	2026-04-06T01:41:38.8956614Z LTS
+≡ƒÜÇ Validate & Train	Set up job	2026-04-06T01:41:38.8957676Z ##[endgroup]
+≡ƒÜÇ Validate & Train	Set up job	2026-04-06T01:41:38.8958843Z ##[group]Runner Image
+≡ƒÜÇ Validate & Train	Set up job	2026-04-06T01:41:38.8960033Z Image: ubuntu-24.04
+≡ƒÜÇ Validate & Train	Set up job	2026-04-06T01:41:38.8961142Z Version: 20260329.72.1
+≡ƒÜÇ Validate & Train	Set up job	2026-04-06T01:41:38.8963050Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20260329.72/images/ubuntu/Ubuntu2404-Readme.md
+≡ƒÜÇ Validate & Train	Set up job	2026-04-06T01:41:38.8967036Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20260329.72
+≡ƒÜÇ Validate & Train	Set up job	2026-04-06T01:41:38.8969111Z ##[endgroup]
+≡ƒÜÇ Validate & Train	Set up job	2026-04-06T01:41:38.8971477Z ##[group]GITHUB_TOKEN Permissions
+≡ƒÜÇ Validate & Train	Set up job	2026-04-06T01:41:38.8974771Z Contents: read
+≡ƒÜÇ Validate & Train	Set up job	2026-04-06T01:41:38.8975828Z Metadata: read
+≡ƒÜÇ Validate & Train	Set up job	2026-04-06T01:41:38.8977062Z Packages: read
+≡ƒÜÇ Validate & Train	Set up job	2026-04-06T01:41:38.8978105Z ##[endgroup]
+≡ƒÜÇ Validate & Train	Set up job	2026-04-06T01:41:38.8981174Z Secret source: Actions
+≡ƒÜÇ Validate & Train	Set up job	2026-04-06T01:41:38.8982710Z Prepare workflow directory
+≡ƒÜÇ Validate & Train	Set up job	2026-04-06T01:41:38.9464656Z Prepare all required actions
+≡ƒÜÇ Validate & Train	Set up job	2026-04-06T01:41:38.9521416Z Getting action download info
+≡ƒÜÇ Validate & Train	Set up job	2026-04-06T01:41:39.1865760Z Download action repository 'actions/checkout@v4' (SHA:34e114876b0b11c390a56381ad16ebd13914f8d5)
+≡ƒÜÇ Validate & Train	Set up job	2026-04-06T01:41:39.3317020Z Download action repository 'actions/setup-python@v5' (SHA:a26af69be951a213d495a4c3e4e4022e16d87065)
+≡ƒÜÇ Validate & Train	Set up job	2026-04-06T01:41:39.5647042Z Complete job name: ≡ƒÜÇ Validate & Train
+≡ƒÜÇ Validate & Train	Run actions/checkout@v4	∩╗┐2026-04-06T01:41:39.6370161Z ##[group]Run actions/checkout@v4
+≡ƒÜÇ Validate & Train	Run actions/checkout@v4	2026-04-06T01:41:39.6371076Z with:
+≡ƒÜÇ Validate & Train	Run actions/checkout@v4	2026-04-06T01:41:39.6371607Z   repository: yahya-azeem/Project-Golf-Ball
+≡ƒÜÇ Validate & Train	Run actions/checkout@v4	2026-04-06T01:41:39.6372374Z   token: ***
+≡ƒÜÇ Validate & Train	Run actions/checkout@v4	2026-04-06T01:41:39.6372816Z   ssh-strict: true
+≡ƒÜÇ Validate & Train	Run actions/checkout@v4	2026-04-06T01:41:39.6373258Z   ssh-user: git
+≡ƒÜÇ Validate & Train	Run actions/checkout@v4	2026-04-06T01:41:39.6373722Z   persist-credentials: true
+≡ƒÜÇ Validate & Train	Run actions/checkout@v4	2026-04-06T01:41:39.6374417Z   clean: true
+≡ƒÜÇ Validate & Train	Run actions/checkout@v4	2026-04-06T01:41:39.6374900Z   sparse-checkout-cone-mode: true
+≡ƒÜÇ Validate & Train	Run actions/checkout@v4	2026-04-06T01:41:39.6375427Z   fetch-depth: 1
+≡ƒÜÇ Validate & Train	Run actions/checkout@v4	2026-04-06T01:41:39.6375873Z   fetch-tags: false
+≡ƒÜÇ Validate & Train	Run actions/checkout@v4	2026-04-06T01:41:39.6376328Z   show-progress: true
+≡ƒÜÇ Validate & Train	Run actions/checkout@v4	2026-04-06T01:41:39.6376787Z   lfs: false
+≡ƒÜÇ Validate & Train	Run actions/checkout@v4	2026-04-06T01:41:39.6377204Z   submodules: false
+≡ƒÜÇ Validate & Train	Run actions/checkout@v4	2026-04-06T01:41:39.6377659Z   set-safe-directory: true
+≡ƒÜÇ Validate & Train	Run actions/checkout@v4	2026-04-06T01:41:39.6378411Z ##[endgroup]
+≡ƒÜÇ Validate & Train	Run actions/checkout@v4	2026-04-06T01:41:39.7440966Z Syncing repository: yahya-azeem/Project-Golf-Ball
+≡ƒÜÇ Validate & Train	Run actions/checkout@v4	2026-04-06T01:41:39.7442918Z ##[group]Getting Git version info
+≡ƒÜÇ Validate & Train	Run actions/checkout@v4	2026-04-06T01:41:39.7443807Z Working directory is '/home/runner/work/Project-Golf-Ball/Project-Golf-Ball'
+≡ƒÜÇ Validate & Train	Run actions/checkout@v4	2026-04-06T01:41:39.7445427Z [command]/usr/bin/git version
+≡ƒÜÇ Validate & Train	Run actions/checkout@v4	2026-04-06T01:41:39.7487971Z git version 2.53.0
+≡ƒÜÇ Validate & Train	Run actions/checkout@v4	2026-04-06T01:41:39.7513510Z ##[endgroup]
+≡ƒÜÇ Validate & Train	Run actions/checkout@v4	2026-04-06T01:41:39.7535622Z Temporarily overriding HOME='/home/runner/work/_temp/840abe12-79c1-4273-a243-efba3a5c3c4f' before making global git config changes
+≡ƒÜÇ Validate & Train	Run actions/checkout@v4	2026-04-06T01:41:39.7537133Z Adding repository directory to the temporary git global config as a safe directory
+≡ƒÜÇ Validate & Train	Run actions/checkout@v4	2026-04-06T01:41:39.7540997Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/Project-Golf-Ball/Project-Golf-Ball
+≡ƒÜÇ Validate & Train	Run actions/checkout@v4	2026-04-06T01:41:39.7573473Z Deleting the contents of '/home/runner/work/Project-Golf-Ball/Project-Golf-Ball'
+≡ƒÜÇ Validate & Train	Run actions/checkout@v4	2026-04-06T01:41:39.7577479Z ##[group]Initializing the repository
+≡ƒÜÇ Validate & Train	Run actions/checkout@v4	2026-04-06T01:41:39.7582307Z [command]/usr/bin/git init /home/runner/work/Project-Golf-Ball/Project-Golf-Ball
+≡ƒÜÇ Validate & Train	Run actions/checkout@v4	2026-04-06T01:41:39.7690988Z hint: Using 'master' as the name for the initial branch. This default branch name
+≡ƒÜÇ Validate & Train	Run actions/checkout@v4	2026-04-06T01:41:39.7692677Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+≡ƒÜÇ Validate & Train	Run actions/checkout@v4	2026-04-06T01:41:39.7694083Z hint: to use in all of your new repositories, which will suppress this warning,
+≡ƒÜÇ Validate & Train	Run actions/checkout@v4	2026-04-06T01:41:39.7695131Z hint: call:
+≡ƒÜÇ Validate & Train	Run actions/checkout@v4	2026-04-06T01:41:39.7695545Z hint:
+≡ƒÜÇ Validate & Train	Run actions/checkout@v4	2026-04-06T01:41:39.7696246Z hint: 	git config --global init.defaultBranch <name>
+≡ƒÜÇ Validate & Train	Run actions/checkout@v4	2026-04-06T01:41:39.7696875Z hint:
+≡ƒÜÇ Validate & Train	Run actions/checkout@v4	2026-04-06T01:41:39.7697837Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+≡ƒÜÇ Validate & Train	Run actions/checkout@v4	2026-04-06T01:41:39.7698968Z hint: 'development'. The just-created branch can be renamed via this command:
+≡ƒÜÇ Validate & Train	Run actions/checkout@v4	2026-04-06T01:41:39.7699711Z hint:
+≡ƒÜÇ Validate & Train	Run actions/checkout@v4	2026-04-06T01:41:39.7700131Z hint: 	git branch -m <name>
+≡ƒÜÇ Validate & Train	Run actions/checkout@v4	2026-04-06T01:41:39.7700658Z hint:
+≡ƒÜÇ Validate & Train	Run actions/checkout@v4	2026-04-06T01:41:39.7701295Z hint: Disable this message with "git config set advice.defaultBranchName false"
+≡ƒÜÇ Validate & Train	Run actions/checkout@v4	2026-04-06T01:41:39.7702693Z Initialized empty Git repository in /home/runner/work/Project-Golf-Ball/Project-Golf-Ball/.git/
+≡ƒÜÇ Validate & Train	Run actions/checkout@v4	2026-04-06T01:41:39.7704943Z [command]/usr/bin/git remote add origin https://github.com/yahya-azeem/Project-Golf-Ball
+≡ƒÜÇ Validate & Train	Run actions/checkout@v4	2026-04-06T01:41:39.7732522Z ##[endgroup]
+≡ƒÜÇ Validate & Train	Run actions/checkout@v4	2026-04-06T01:41:39.7733386Z ##[group]Disabling automatic garbage collection
+≡ƒÜÇ Validate & Train	Run actions/checkout@v4	2026-04-06T01:41:39.7736546Z [command]/usr/bin/git config --local gc.auto 0
+≡ƒÜÇ Validate & Train	Run actions/checkout@v4	2026-04-06T01:41:39.7763616Z ##[endgroup]
+≡ƒÜÇ Validate & Train	Run actions/checkout@v4	2026-04-06T01:41:39.7764687Z ##[group]Setting up auth
+≡ƒÜÇ Validate & Train	Run actions/checkout@v4	2026-04-06T01:41:39.7770373Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+≡ƒÜÇ Validate & Train	Run actions/checkout@v4	2026-04-06T01:41:39.7799594Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+≡ƒÜÇ Validate & Train	Run actions/checkout@v4	2026-04-06T01:41:39.8092564Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+≡ƒÜÇ Validate & Train	Run actions/checkout@v4	2026-04-06T01:41:39.8122435Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+≡ƒÜÇ Validate & Train	Run actions/checkout@v4	2026-04-06T01:41:39.8338215Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+≡ƒÜÇ Validate & Train	Run actions/checkout@v4	2026-04-06T01:41:39.8370208Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+≡ƒÜÇ Validate & Train	Run actions/checkout@v4	2026-04-06T01:41:39.8598242Z [command]/usr/bin/git config --local http.https://github.com/.extraheader AUTHORIZATION: basic ***
+≡ƒÜÇ Validate & Train	Run actions/checkout@v4	2026-04-06T01:41:39.8631768Z ##[endgroup]
+≡ƒÜÇ Validate & Train	Run actions/checkout@v4	2026-04-06T01:41:39.8632634Z ##[group]Fetching the repository
+≡ƒÜÇ Validate & Train	Run actions/checkout@v4	2026-04-06T01:41:39.8640786Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +051dbc65fca9c3656df6dcb40b85a810193c415b:refs/remotes/origin/main
+≡ƒÜÇ Validate & Train	Run actions/checkout@v4	2026-04-06T01:41:40.0502948Z From https://github.com/yahya-azeem/Project-Golf-Ball
+≡ƒÜÇ Validate & Train	Run actions/checkout@v4	2026-04-06T01:41:40.0503953Z  * [new ref]         051dbc65fca9c3656df6dcb40b85a810193c415b -> origin/main
+≡ƒÜÇ Validate & Train	Run actions/checkout@v4	2026-04-06T01:41:40.0532592Z ##[endgroup]
+≡ƒÜÇ Validate & Train	Run actions/checkout@v4	2026-04-06T01:41:40.0534560Z ##[group]Determining the checkout info
+≡ƒÜÇ Validate & Train	Run actions/checkout@v4	2026-04-06T01:41:40.0536748Z ##[endgroup]
+≡ƒÜÇ Validate & Train	Run actions/checkout@v4	2026-04-06T01:41:40.0540662Z [command]/usr/bin/git sparse-checkout disable
+≡ƒÜÇ Validate & Train	Run actions/checkout@v4	2026-04-06T01:41:40.0576966Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+≡ƒÜÇ Validate & Train	Run actions/checkout@v4	2026-04-06T01:41:40.0601902Z ##[group]Checking out the ref
+≡ƒÜÇ Validate & Train	Run actions/checkout@v4	2026-04-06T01:41:40.0605433Z [command]/usr/bin/git checkout --progress --force -B main refs/remotes/origin/main
+≡ƒÜÇ Validate & Train	Run actions/checkout@v4	2026-04-06T01:41:40.0670458Z Switched to a new branch 'main'
+≡ƒÜÇ Validate & Train	Run actions/checkout@v4	2026-04-06T01:41:40.0673482Z branch 'main' set up to track 'origin/main'.
+≡ƒÜÇ Validate & Train	Run actions/checkout@v4	2026-04-06T01:41:40.0679581Z ##[endgroup]
+≡ƒÜÇ Validate & Train	Run actions/checkout@v4	2026-04-06T01:41:40.0711346Z [command]/usr/bin/git log -1 --format=%H
+≡ƒÜÇ Validate & Train	Run actions/checkout@v4	2026-04-06T01:41:40.0732393Z 051dbc65fca9c3656df6dcb40b85a810193c415b
+≡ƒÜÇ Validate & Train	Setup Python	∩╗┐2026-04-06T01:41:40.0976513Z ##[group]Run actions/setup-python@v5
+≡ƒÜÇ Validate & Train	Setup Python	2026-04-06T01:41:40.0977140Z with:
+≡ƒÜÇ Validate & Train	Setup Python	2026-04-06T01:41:40.0977568Z   python-version: 3.10
+≡ƒÜÇ Validate & Train	Setup Python	2026-04-06T01:41:40.0978040Z   cache: pip
+≡ƒÜÇ Validate & Train	Setup Python	2026-04-06T01:41:40.0978475Z   check-latest: false
+≡ƒÜÇ Validate & Train	Setup Python	2026-04-06T01:41:40.0979092Z   token: ***
+≡ƒÜÇ Validate & Train	Setup Python	2026-04-06T01:41:40.0979532Z   update-environment: true
+≡ƒÜÇ Validate & Train	Setup Python	2026-04-06T01:41:40.0980036Z   allow-prereleases: false
+≡ƒÜÇ Validate & Train	Setup Python	2026-04-06T01:41:40.0980713Z   freethreaded: false
+≡ƒÜÇ Validate & Train	Setup Python	2026-04-06T01:41:40.0981166Z ##[endgroup]
+≡ƒÜÇ Validate & Train	Setup Python	2026-04-06T01:41:40.2618022Z ##[group]Installed versions
+≡ƒÜÇ Validate & Train	Setup Python	2026-04-06T01:41:40.2764430Z Successfully set up CPython (3.10.20)
+≡ƒÜÇ Validate & Train	Setup Python	2026-04-06T01:41:40.2765657Z ##[endgroup]
+≡ƒÜÇ Validate & Train	Setup Python	2026-04-06T01:41:40.3426043Z [command]/opt/hostedtoolcache/Python/3.10.20/x64/bin/pip cache dir
+≡ƒÜÇ Validate & Train	Setup Python	2026-04-06T01:41:41.7746087Z /home/runner/.cache/pip
+≡ƒÜÇ Validate & Train	Setup Python	2026-04-06T01:41:41.8806407Z pip cache is not found
+≡ƒÜÇ Validate & Train	Install dependencies	∩╗┐2026-04-06T01:41:41.8927720Z ##[group]Run pip install requests numpy torch sentencepiece
+≡ƒÜÇ Validate & Train	Install dependencies	2026-04-06T01:41:41.8928370Z [36;1mpip install requests numpy torch sentencepiece[0m
+≡ƒÜÇ Validate & Train	Install dependencies	2026-04-06T01:41:41.8964648Z shell: /usr/bin/bash -e {0}
+≡ƒÜÇ Validate & Train	Install dependencies	2026-04-06T01:41:41.8965042Z env:
+≡ƒÜÇ Validate & Train	Install dependencies	2026-04-06T01:41:41.8965396Z   pythonLocation: /opt/hostedtoolcache/Python/3.10.20/x64
+≡ƒÜÇ Validate & Train	Install dependencies	2026-04-06T01:41:41.8965951Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.10.20/x64/lib/pkgconfig
+≡ƒÜÇ Validate & Train	Install dependencies	2026-04-06T01:41:41.8966465Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.10.20/x64
+≡ƒÜÇ Validate & Train	Install dependencies	2026-04-06T01:41:41.8966935Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.10.20/x64
+≡ƒÜÇ Validate & Train	Install dependencies	2026-04-06T01:41:41.8967425Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.10.20/x64
+≡ƒÜÇ Validate & Train	Install dependencies	2026-04-06T01:41:41.8967888Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.10.20/x64/lib
+≡ƒÜÇ Validate & Train	Install dependencies	2026-04-06T01:41:41.8968293Z ##[endgroup]
+≡ƒÜÇ Validate & Train	Install dependencies	2026-04-06T01:41:43.2909294Z Collecting requests
+≡ƒÜÇ Validate & Train	Install dependencies	2026-04-06T01:41:43.3651629Z   Downloading requests-2.33.1-py3-none-any.whl.metadata (4.8 kB)
+≡ƒÜÇ Validate & Train	Install dependencies	2026-04-06T01:41:43.6483585Z Collecting numpy
+≡ƒÜÇ Validate & Train	Install dependencies	2026-04-06T01:41:43.6567105Z   Downloading numpy-2.2.6-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (62 kB)
+≡ƒÜÇ Validate & Train	Install dependencies	2026-04-06T01:41:43.7379295Z Collecting torch
+≡ƒÜÇ Validate & Train	Install dependencies	2026-04-06T01:41:43.7472514Z   Downloading torch-2.11.0-cp310-cp310-manylinux_2_28_x86_64.whl.metadata (29 kB)
+≡ƒÜÇ Validate & Train	Install dependencies	2026-04-06T01:41:43.8119067Z Collecting sentencepiece
+≡ƒÜÇ Validate & Train	Install dependencies	2026-04-06T01:41:43.8230335Z   Downloading sentencepiece-0.2.1-cp310-cp310-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl.metadata (10 kB)
+≡ƒÜÇ Validate & Train	Install dependencies	2026-04-06T01:41:43.9541125Z Collecting charset_normalizer<4,>=2 (from requests)
+≡ƒÜÇ Validate & Train	Install dependencies	2026-04-06T01:41:43.9621232Z   Downloading charset_normalizer-3.4.7-cp310-cp310-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl.metadata (40 kB)
+≡ƒÜÇ Validate & Train	Install dependencies	2026-04-06T01:41:43.9862672Z Collecting idna<4,>=2.5 (from requests)
+≡ƒÜÇ Validate & Train	Install dependencies	2026-04-06T01:41:43.9937176Z   Downloading idna-3.11-py3-none-any.whl.metadata (8.4 kB)
+≡ƒÜÇ Validate & Train	Install dependencies	2026-04-06T01:41:44.0263184Z Collecting urllib3<3,>=1.26 (from requests)
+≡ƒÜÇ Validate & Train	Install dependencies	2026-04-06T01:41:44.0340598Z   Downloading urllib3-2.6.3-py3-none-any.whl.metadata (6.9 kB)
+≡ƒÜÇ Validate & Train	Install dependencies	2026-04-06T01:41:44.0583420Z Collecting certifi>=2023.5.7 (from requests)
+≡ƒÜÇ Validate & Train	Install dependencies	2026-04-06T01:41:44.0660306Z   Downloading certifi-2026.2.25-py3-none-any.whl.metadata (2.5 kB)
+≡ƒÜÇ Validate & Train	Install dependencies	2026-04-06T01:41:44.0953167Z Collecting filelock (from torch)
+≡ƒÜÇ Validate & Train	Install dependencies	2026-04-06T01:41:44.1031358Z   Downloading filelock-3.25.2-py3-none-any.whl.metadata (2.0 kB)
+≡ƒÜÇ Validate & Train	Install dependencies	2026-04-06T01:41:44.1256708Z Collecting typing-extensions>=4.10.0 (from torch)
+≡ƒÜÇ Validate & Train	Install dependencies	2026-04-06T01:41:44.1331290Z   Downloading typing_extensions-4.15.0-py3-none-any.whl.metadata (3.3 kB)
+≡ƒÜÇ Validate & Train	Install dependencies	2026-04-06T01:41:44.1379186Z Requirement already satisfied: setuptools<82 in /opt/hostedtoolcache/Python/3.10.20/x64/lib/python3.10/site-packages (from torch) (79.0.1)
+≡ƒÜÇ Validate & Train	Install dependencies	2026-04-06T01:41:44.1775094Z Collecting sympy>=1.13.3 (from torch)
+≡ƒÜÇ Validate & Train	Install dependencies	2026-04-06T01:41:44.1853078Z   Downloading sympy-1.14.0-py3-none-any.whl.metadata (12 kB)
+≡ƒÜÇ Validate & Train	Install dependencies	2026-04-06T01:41:44.2148149Z Collecting networkx>=2.5.1 (from torch)
+≡ƒÜÇ Validate & Train	Install dependencies	2026-04-06T01:41:44.2229726Z   Downloading networkx-3.4.2-py3-none-any.whl.metadata (6.3 kB)
+≡ƒÜÇ Validate & Train	Install dependencies	2026-04-06T01:41:44.2484548Z Collecting jinja2 (from torch)
+≡ƒÜÇ Validate & Train	Install dependencies	2026-04-06T01:41:44.2564830Z   Downloading jinja2-3.1.6-py3-none-any.whl.metadata (2.9 kB)
+≡ƒÜÇ Validate & Train	Install dependencies	2026-04-06T01:41:44.2868708Z Collecting fsspec>=0.8.5 (from torch)
+≡ƒÜÇ Validate & Train	Install dependencies	2026-04-06T01:41:44.2949228Z   Downloading fsspec-2026.3.0-py3-none-any.whl.metadata (10 kB)
+≡ƒÜÇ Validate & Train	Install dependencies	2026-04-06T01:41:44.3426560Z Collecting cuda-toolkit==13.0.2 (from cuda-toolkit[cublas,cudart,cufft,cufile,cupti,curand,cusolver,cusparse,nvjitlink,nvrtc,nvtx]==13.0.2; platform_system == "Linux"->torch)
+≡ƒÜÇ Validate & Train	Install dependencies	2026-04-06T01:41:44.3498955Z   Downloading cuda_toolkit-13.0.2-py2.py3-none-any.whl.metadata (9.4 kB)
+≡ƒÜÇ Validate & Train	Install dependencies	2026-04-06T01:41:44.4028401Z Collecting cuda-bindings<14,>=13.0.3 (from torch)
+≡ƒÜÇ Validate & Train	Install dependencies	2026-04-06T01:41:44.4127235Z   Downloading cuda_bindings-13.2.0-cp310-cp310-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl.metadata (2.3 kB)
+≡ƒÜÇ Validate & Train	Install dependencies	2026-04-06T01:41:44.4317772Z Collecting nvidia-cudnn-cu13==9.19.0.56 (from torch)
+≡ƒÜÇ Validate & Train	Install dependencies	2026-04-06T01:41:44.4398114Z   Downloading nvidia_cudnn_cu13-9.19.0.56-py3-none-manylinux_2_27_x86_64.whl.metadata (1.9 kB)
+≡ƒÜÇ Validate & Train	Install dependencies	2026-04-06T01:41:44.4541766Z Collecting nvidia-cusparselt-cu13==0.8.0 (from torch)
+≡ƒÜÇ Validate & Train	Install dependencies	2026-04-06T01:41:44.4612757Z   Downloading nvidia_cusparselt_cu13-0.8.0-py3-none-manylinux2014_x86_64.whl.metadata (12 kB)
+≡ƒÜÇ Validate & Train	Install dependencies	2026-04-06T01:41:44.4758149Z Collecting nvidia-nccl-cu13==2.28.9 (from torch)
+≡ƒÜÇ Validate & Train	Install dependencies	2026-04-06T01:41:44.4829030Z   Downloading nvidia_nccl_cu13-2.28.9-py3-none-manylinux_2_18_x86_64.whl.metadata (2.0 kB)
+≡ƒÜÇ Validate & Train	Install dependencies	2026-04-06T01:41:44.4967030Z Collecting nvidia-nvshmem-cu13==3.4.5 (from torch)
+≡ƒÜÇ Validate & Train	Install dependencies	2026-04-06T01:41:44.5040158Z   Downloading nvidia_nvshmem_cu13-3.4.5-py3-none-manylinux2014_x86_64.manylinux_2_17_x86_64.whl.metadata (2.1 kB)
+≡ƒÜÇ Validate & Train	Install dependencies	2026-04-06T01:41:44.5261147Z Collecting triton==3.6.0 (from torch)
+≡ƒÜÇ Validate & Train	Install dependencies	2026-04-06T01:41:44.5353980Z   Downloading triton-3.6.0-cp310-cp310-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl.metadata (1.7 kB)
+≡ƒÜÇ Validate & Train	Install dependencies	2026-04-06T01:41:44.5539307Z Collecting nvidia-cuda-nvrtc==13.0.88.* (from cuda-toolkit[cublas,cudart,cufft,cufile,cupti,curand,cusolver,cusparse,nvjitlink,nvrtc,nvtx]==13.0.2; platform_system == "Linux"->torch)
+≡ƒÜÇ Validate & Train	Install dependencies	2026-04-06T01:41:44.5621453Z   Downloading nvidia_cuda_nvrtc-13.0.88-py3-none-manylinux2010_x86_64.manylinux_2_12_x86_64.whl.metadata (1.7 kB)
+≡ƒÜÇ Validate & Train	Install dependencies	2026-04-06T01:41:44.5774622Z Collecting nvidia-cuda-runtime==13.0.96.* (from cuda-toolkit[cublas,cudart,cufft,cufile,cupti,curand,cusolver,cusparse,nvjitlink,nvrtc,nvtx]==13.0.2; platform_system == "Linux"->torch)
+≡ƒÜÇ Validate & Train	Install dependencies	2026-04-06T01:41:44.5876355Z   Downloading nvidia_cuda_runtime-13.0.96-py3-none-manylinux2014_x86_64.manylinux_2_17_x86_64.whl.metadata (1.7 kB)
+≡ƒÜÇ Validate & Train	Install dependencies	2026-04-06T01:41:44.6035515Z Collecting nvidia-cusolver==12.0.4.66.* (from cuda-toolkit[cublas,cudart,cufft,cufile,cupti,curand,cusolver,cusparse,nvjitlink,nvrtc,nvtx]==13.0.2; platform_system == "Linux"->torch)
+≡ƒÜÇ Validate & Train	Install dependencies	2026-04-06T01:41:44.6110177Z   Downloading nvidia_cusolver-12.0.4.66-py3-none-manylinux_2_27_x86_64.whl.metadata (1.8 kB)
+≡ƒÜÇ Validate & Train	Install dependencies	2026-04-06T01:41:44.6267425Z Collecting nvidia-cublas==13.1.0.3.* (from cuda-toolkit[cublas,cudart,cufft,cufile,cupti,curand,cusolver,cusparse,nvjitlink,nvrtc,nvtx]==13.0.2; platform_system == "Linux"->torch)
+≡ƒÜÇ Validate & Train	Install dependencies	2026-04-06T01:41:44.6340633Z   Downloading nvidia_cublas-13.1.0.3-py3-none-manylinux_2_27_x86_64.whl.metadata (1.7 kB)
+≡ƒÜÇ Validate & Train	Install dependencies	2026-04-06T01:41:44.6647567Z Collecting nvidia-cuda-cupti==13.0.85.* (from cuda-toolkit[cublas,cudart,cufft,cufile,cupti,curand,cusolver,cusparse,nvjitlink,nvrtc,nvtx]==13.0.2; platform_system == "Linux"->torch)
+≡ƒÜÇ Validate & Train	Install dependencies	2026-04-06T01:41:44.6723205Z   Downloading nvidia_cuda_cupti-13.0.85-py3-none-manylinux_2_25_x86_64.whl.metadata (1.7 kB)
+≡ƒÜÇ Validate & Train	Install dependencies	2026-04-06T01:41:44.6871105Z Collecting nvidia-cufft==12.0.0.61.* (from cuda-toolkit[cublas,cudart,cufft,cufile,cupti,curand,cusolver,cusparse,nvjitlink,nvrtc,nvtx]==13.0.2; platform_system == "Linux"->torch)
+≡ƒÜÇ Validate & Train	Install dependencies	2026-04-06T01:41:44.6944560Z   Downloading nvidia_cufft-12.0.0.61-py3-none-manylinux2014_x86_64.manylinux_2_17_x86_64.whl.metadata (1.8 kB)
+≡ƒÜÇ Validate & Train	Install dependencies	2026-04-06T01:41:44.7101874Z Collecting nvidia-cusparse==12.6.3.3.* (from cuda-toolkit[cublas,cudart,cufft,cufile,cupti,curand,cusolver,cusparse,nvjitlink,nvrtc,nvtx]==13.0.2; platform_system == "Linux"->torch)
+≡ƒÜÇ Validate & Train	Install dependencies	2026-04-06T01:41:44.7175073Z   Downloading nvidia_cusparse-12.6.3.3-py3-none-manylinux2014_x86_64.manylinux_2_17_x86_64.whl.metadata (1.8 kB)
+≡ƒÜÇ Validate & Train	Install dependencies	2026-04-06T01:41:44.7321012Z Collecting nvidia-curand==10.4.0.35.* (from cuda-toolkit[cublas,cudart,cufft,cufile,cupti,curand,cusolver,cusparse,nvjitlink,nvrtc,nvtx]==13.0.2; platform_system == "Linux"->torch)
+≡ƒÜÇ Validate & Train	Install dependencies	2026-04-06T01:41:44.7392912Z   Downloading nvidia_curand-10.4.0.35-py3-none-manylinux_2_27_x86_64.whl.metadata (1.7 kB)
+≡ƒÜÇ Validate & Train	Install dependencies	2026-04-06T01:41:44.7546074Z Collecting nvidia-nvjitlink==13.0.88.* (from cuda-toolkit[cublas,cudart,cufft,cufile,cupti,curand,cusolver,cusparse,nvjitlink,nvrtc,nvtx]==13.0.2; platform_system == "Linux"->torch)
+≡ƒÜÇ Validate & Train	Install dependencies	2026-04-06T01:41:44.7626371Z   Downloading nvidia_nvjitlink-13.0.88-py3-none-manylinux2010_x86_64.manylinux_2_12_x86_64.whl.metadata (1.7 kB)
+≡ƒÜÇ Validate & Train	Install dependencies	2026-04-06T01:41:44.7771715Z Collecting nvidia-cufile==1.15.1.6.* (from cuda-toolkit[cublas,cudart,cufft,cufile,cupti,curand,cusolver,cusparse,nvjitlink,nvrtc,nvtx]==13.0.2; platform_system == "Linux"->torch)
+≡ƒÜÇ Validate & Train	Install dependencies	2026-04-06T01:41:44.7844782Z   Downloading nvidia_cufile-1.15.1.6-py3-none-manylinux2014_x86_64.manylinux_2_17_x86_64.whl.metadata (1.7 kB)
+≡ƒÜÇ Validate & Train	Install dependencies	2026-04-06T01:41:44.7988650Z Collecting nvidia-nvtx==13.0.85.* (from cuda-toolkit[cublas,cudart,cufft,cufile,cupti,curand,cusolver,cusparse,nvjitlink,nvrtc,nvtx]==13.0.2; platform_system == "Linux"->torch)
+≡ƒÜÇ Validate & Train	Install dependencies	2026-04-06T01:41:44.8063341Z   Downloading nvidia_nvtx-13.0.85-py3-none-manylinux1_x86_64.manylinux_2_5_x86_64.whl.metadata (1.8 kB)
+≡ƒÜÇ Validate & Train	Install dependencies	2026-04-06T01:41:44.8265645Z Collecting cuda-pathfinder~=1.1 (from cuda-bindings<14,>=13.0.3->torch)
+≡ƒÜÇ Validate & Train	Install dependencies	2026-04-06T01:41:44.8339072Z   Downloading cuda_pathfinder-1.5.1-py3-none-any.whl.metadata (1.9 kB)
+≡ƒÜÇ Validate & Train	Install dependencies	2026-04-06T01:41:44.8801702Z Collecting mpmath<1.4,>=1.1.0 (from sympy>=1.13.3->torch)
+≡ƒÜÇ Validate & Train	Install dependencies	2026-04-06T01:41:44.8874497Z   Downloading mpmath-1.3.0-py3-none-any.whl.metadata (8.6 kB)
+≡ƒÜÇ Validate & Train	Install dependencies	2026-04-06T01:41:44.9584673Z Collecting MarkupSafe>=2.0 (from jinja2->torch)
+≡ƒÜÇ Validate & Train	Install dependencies	2026-04-06T01:41:44.9666209Z   Downloading markupsafe-3.0.3-cp310-cp310-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl.metadata (2.7 kB)
+≡ƒÜÇ Validate & Train	Install dependencies	2026-04-06T01:41:44.9778975Z Downloading requests-2.33.1-py3-none-any.whl (64 kB)
+≡ƒÜÇ Validate & Train	Install dependencies	2026-04-06T01:41:44.9932561Z Downloading charset_normalizer-3.4.7-cp310-cp310-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl (216 kB)
+≡ƒÜÇ Validate & Train	Install dependencies	2026-04-06T01:41:45.0237076Z Downloading idna-3.11-py3-none-any.whl (71 kB)
+≡ƒÜÇ Validate & Train	Install dependencies	2026-04-06T01:41:45.0391113Z Downloading urllib3-2.6.3-py3-none-any.whl (131 kB)
+≡ƒÜÇ Validate & Train	Install dependencies	2026-04-06T01:41:45.0575300Z Downloading numpy-2.2.6-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (16.8 MB)
+≡ƒÜÇ Validate & Train	Install dependencies	2026-04-06T01:41:45.3621598Z    ΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöü 16.8/16.8 MB 58.1 MB/s  0:00:00
+≡ƒÜÇ Validate & Train	Install dependencies	2026-04-06T01:41:45.3720054Z Downloading torch-2.11.0-cp310-cp310-manylinux_2_28_x86_64.whl (530.6 MB)
+≡ƒÜÇ Validate & Train	Install dependencies	2026-04-06T01:41:50.0528743Z    ΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöü 530.6/530.6 MB 87.3 MB/s  0:00:04
+≡ƒÜÇ Validate & Train	Install dependencies	2026-04-06T01:41:50.0607587Z Downloading cuda_toolkit-13.0.2-py2.py3-none-any.whl (2.4 kB)
+≡ƒÜÇ Validate & Train	Install dependencies	2026-04-06T01:41:50.0759537Z Downloading nvidia_cudnn_cu13-9.19.0.56-py3-none-manylinux_2_27_x86_64.whl (366.1 MB)
+≡ƒÜÇ Validate & Train	Install dependencies	2026-04-06T01:41:53.6924030Z    ΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöü 366.1/366.1 MB 90.3 MB/s  0:00:03
+≡ƒÜÇ Validate & Train	Install dependencies	2026-04-06T01:41:53.7048120Z Downloading nvidia_cusparselt_cu13-0.8.0-py3-none-manylinux2014_x86_64.whl (169.9 MB)
+≡ƒÜÇ Validate & Train	Install dependencies	2026-04-06T01:41:55.1821648Z    ΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöü 169.9/169.9 MB 115.1 MB/s  0:00:01
+≡ƒÜÇ Validate & Train	Install dependencies	2026-04-06T01:41:55.1925796Z Downloading nvidia_nccl_cu13-2.28.9-py3-none-manylinux_2_18_x86_64.whl (196.5 MB)
+≡ƒÜÇ Validate & Train	Install dependencies	2026-04-06T01:41:56.7853253Z    ΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöü 196.5/196.5 MB 123.4 MB/s  0:00:01
+≡ƒÜÇ Validate & Train	Install dependencies	2026-04-06T01:41:56.8011112Z Downloading nvidia_nvshmem_cu13-3.4.5-py3-none-manylinux2014_x86_64.manylinux_2_17_x86_64.whl (60.4 MB)
+≡ƒÜÇ Validate & Train	Install dependencies	2026-04-06T01:41:57.3712590Z    ΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöü 60.4/60.4 MB 106.2 MB/s  0:00:00
+≡ƒÜÇ Validate & Train	Install dependencies	2026-04-06T01:41:57.3882559Z Downloading triton-3.6.0-cp310-cp310-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl (188.1 MB)
+≡ƒÜÇ Validate & Train	Install dependencies	2026-04-06T01:41:59.9924684Z    ΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöü 188.1/188.1 MB 72.2 MB/s  0:00:02
+≡ƒÜÇ Validate & Train	Install dependencies	2026-04-06T01:42:00.0037964Z Downloading cuda_bindings-13.2.0-cp310-cp310-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl (6.3 MB)
+≡ƒÜÇ Validate & Train	Install dependencies	2026-04-06T01:42:00.0397635Z    ΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöü 6.3/6.3 MB 182.4 MB/s  0:00:00
+≡ƒÜÇ Validate & Train	Install dependencies	2026-04-06T01:42:00.0474213Z Downloading cuda_pathfinder-1.5.1-py3-none-any.whl (49 kB)
+≡ƒÜÇ Validate & Train	Install dependencies	2026-04-06T01:42:00.0609105Z Downloading nvidia_cublas-13.1.0.3-py3-none-manylinux_2_27_x86_64.whl (423.1 MB)
+≡ƒÜÇ Validate & Train	Install dependencies	2026-04-06T01:42:05.4951819Z    ΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöü 423.1/423.1 MB 64.5 MB/s  0:00:05
+≡ƒÜÇ Validate & Train	Install dependencies	2026-04-06T01:42:05.5033528Z Downloading nvidia_cuda_cupti-13.0.85-py3-none-manylinux_2_25_x86_64.whl (10.7 MB)
+≡ƒÜÇ Validate & Train	Install dependencies	2026-04-06T01:42:05.5857883Z    ΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöü 10.7/10.7 MB 132.3 MB/s  0:00:00
+≡ƒÜÇ Validate & Train	Install dependencies	2026-04-06T01:42:05.5966843Z Downloading nvidia_cuda_nvrtc-13.0.88-py3-none-manylinux2010_x86_64.manylinux_2_12_x86_64.whl (90.2 MB)
+≡ƒÜÇ Validate & Train	Install dependencies	2026-04-06T01:42:06.3289326Z    ΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöü 90.2/90.2 MB 123.3 MB/s  0:00:00
+≡ƒÜÇ Validate & Train	Install dependencies	2026-04-06T01:42:06.3385380Z Downloading nvidia_cuda_runtime-13.0.96-py3-none-manylinux2014_x86_64.manylinux_2_17_x86_64.whl (2.2 MB)
+≡ƒÜÇ Validate & Train	Install dependencies	2026-04-06T01:42:06.3590232Z    ΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöü 2.2/2.2 MB 117.9 MB/s  0:00:00
+≡ƒÜÇ Validate & Train	Install dependencies	2026-04-06T01:42:06.3667334Z Downloading nvidia_cufft-12.0.0.61-py3-none-manylinux2014_x86_64.manylinux_2_17_x86_64.whl (214.1 MB)
+≡ƒÜÇ Validate & Train	Install dependencies	2026-04-06T01:42:08.0423339Z    ΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöü 214.1/214.1 MB 127.8 MB/s  0:00:01
+≡ƒÜÇ Validate & Train	Install dependencies	2026-04-06T01:42:08.0550797Z Downloading nvidia_cufile-1.15.1.6-py3-none-manylinux2014_x86_64.manylinux_2_17_x86_64.whl (1.2 MB)
+≡ƒÜÇ Validate & Train	Install dependencies	2026-04-06T01:42:08.0635126Z    ΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöü 1.2/1.2 MB 159.1 MB/s  0:00:00
+≡ƒÜÇ Validate & Train	Install dependencies	2026-04-06T01:42:08.0711299Z Downloading nvidia_curand-10.4.0.35-py3-none-manylinux_2_27_x86_64.whl (59.5 MB)
+≡ƒÜÇ Validate & Train	Install dependencies	2026-04-06T01:42:08.6391381Z    ΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöü 59.5/59.5 MB 105.3 MB/s  0:00:00
+≡ƒÜÇ Validate & Train	Install dependencies	2026-04-06T01:42:08.6467512Z Downloading nvidia_cusolver-12.0.4.66-py3-none-manylinux_2_27_x86_64.whl (200.9 MB)
+≡ƒÜÇ Validate & Train	Install dependencies	2026-04-06T01:42:11.0350686Z    ΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöü 200.9/200.9 MB 84.3 MB/s  0:00:02
+≡ƒÜÇ Validate & Train	Install dependencies	2026-04-06T01:42:11.0427943Z Downloading nvidia_cusparse-12.6.3.3-py3-none-manylinux2014_x86_64.manylinux_2_17_x86_64.whl (145.9 MB)
+≡ƒÜÇ Validate & Train	Install dependencies	2026-04-06T01:42:12.2254570Z    ΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöü 145.9/145.9 MB 123.6 MB/s  0:00:01
+≡ƒÜÇ Validate & Train	Install dependencies	2026-04-06T01:42:12.2334895Z Downloading nvidia_nvjitlink-13.0.88-py3-none-manylinux2010_x86_64.manylinux_2_12_x86_64.whl (40.7 MB)
+≡ƒÜÇ Validate & Train	Install dependencies	2026-04-06T01:42:12.5832767Z    ΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöü 40.7/40.7 MB 116.7 MB/s  0:00:00
+≡ƒÜÇ Validate & Train	Install dependencies	2026-04-06T01:42:12.5909472Z Downloading nvidia_nvtx-13.0.85-py3-none-manylinux1_x86_64.manylinux_2_5_x86_64.whl (148 kB)
+≡ƒÜÇ Validate & Train	Install dependencies	2026-04-06T01:42:12.6114688Z Downloading sentencepiece-0.2.1-cp310-cp310-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl (1.4 MB)
+≡ƒÜÇ Validate & Train	Install dependencies	2026-04-06T01:42:12.6207789Z    ΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöü 1.4/1.4 MB 166.0 MB/s  0:00:00
+≡ƒÜÇ Validate & Train	Install dependencies	2026-04-06T01:42:12.6279679Z Downloading certifi-2026.2.25-py3-none-any.whl (153 kB)
+≡ƒÜÇ Validate & Train	Install dependencies	2026-04-06T01:42:12.6376954Z Downloading fsspec-2026.3.0-py3-none-any.whl (202 kB)
+≡ƒÜÇ Validate & Train	Install dependencies	2026-04-06T01:42:12.6475600Z Downloading networkx-3.4.2-py3-none-any.whl (1.7 MB)
+≡ƒÜÇ Validate & Train	Install dependencies	2026-04-06T01:42:12.6647878Z    ΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöü 1.7/1.7 MB 107.2 MB/s  0:00:00
+≡ƒÜÇ Validate & Train	Install dependencies	2026-04-06T01:42:12.6720861Z Downloading sympy-1.14.0-py3-none-any.whl (6.3 MB)
+≡ƒÜÇ Validate & Train	Install dependencies	2026-04-06T01:42:12.6924738Z    ΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöü 6.3/6.3 MB 336.6 MB/s  0:00:00
+≡ƒÜÇ Validate & Train	Install dependencies	2026-04-06T01:42:12.7007113Z Downloading mpmath-1.3.0-py3-none-any.whl (536 kB)
+≡ƒÜÇ Validate & Train	Install dependencies	2026-04-06T01:42:12.7069332Z    ΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöü 536.2/536.2 kB 69.0 MB/s  0:00:00
+≡ƒÜÇ Validate & Train	Install dependencies	2026-04-06T01:42:12.7149820Z Downloading typing_extensions-4.15.0-py3-none-any.whl (44 kB)
+≡ƒÜÇ Validate & Train	Install dependencies	2026-04-06T01:42:12.7251040Z Downloading filelock-3.25.2-py3-none-any.whl (26 kB)
+≡ƒÜÇ Validate & Train	Install dependencies	2026-04-06T01:42:12.7355977Z Downloading jinja2-3.1.6-py3-none-any.whl (134 kB)
+≡ƒÜÇ Validate & Train	Install dependencies	2026-04-06T01:42:12.7454022Z Downloading markupsafe-3.0.3-cp310-cp310-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl (20 kB)
+≡ƒÜÇ Validate & Train	Install dependencies	2026-04-06T01:42:14.9708477Z Installing collected packages: nvidia-cusparselt-cu13, mpmath, cuda-toolkit, urllib3, typing-extensions, triton, sympy, sentencepiece, nvidia-nvtx, nvidia-nvshmem-cu13, nvidia-nvjitlink, nvidia-nccl-cu13, nvidia-curand, nvidia-cufile, nvidia-cuda-runtime, nvidia-cuda-nvrtc, nvidia-cuda-cupti, nvidia-cublas, numpy, networkx, MarkupSafe, idna, fsspec, filelock, cuda-pathfinder, charset_normalizer, certifi, requests, nvidia-cusparse, nvidia-cufft, nvidia-cudnn-cu13, jinja2, cuda-bindings, nvidia-cusolver, torch
+≡ƒÜÇ Validate & Train	Install dependencies	2026-04-06T01:42:47.2316712Z 
+≡ƒÜÇ Validate & Train	Install dependencies	2026-04-06T01:42:47.2372764Z Successfully installed MarkupSafe-3.0.3 certifi-2026.2.25 charset_normalizer-3.4.7 cuda-bindings-13.2.0 cuda-pathfinder-1.5.1 cuda-toolkit-13.0.2 filelock-3.25.2 fsspec-2026.3.0 idna-3.11 jinja2-3.1.6 mpmath-1.3.0 networkx-3.4.2 numpy-2.2.6 nvidia-cublas-13.1.0.3 nvidia-cuda-cupti-13.0.85 nvidia-cuda-nvrtc-13.0.88 nvidia-cuda-runtime-13.0.96 nvidia-cudnn-cu13-9.19.0.56 nvidia-cufft-12.0.0.61 nvidia-cufile-1.15.1.6 nvidia-curand-10.4.0.35 nvidia-cusolver-12.0.4.66 nvidia-cusparse-12.6.3.3 nvidia-cusparselt-cu13-0.8.0 nvidia-nccl-cu13-2.28.9 nvidia-nvjitlink-13.0.88 nvidia-nvshmem-cu13-3.4.5 nvidia-nvtx-13.0.85 requests-2.33.1 sentencepiece-0.2.1 sympy-1.14.0 torch-2.11.0 triton-3.6.0 typing-extensions-4.15.0 urllib3-2.6.3
+≡ƒÜÇ Validate & Train	≡ƒ¢í∩╕Å Script Verification	∩╗┐2026-04-06T01:42:47.5726533Z ##[group]Run echo "≡ƒöì Verifying Python scripts syntax..."
+≡ƒÜÇ Validate & Train	≡ƒ¢í∩╕Å Script Verification	2026-04-06T01:42:47.5727014Z [36;1mecho "≡ƒöì Verifying Python scripts syntax..."[0m
+≡ƒÜÇ Validate & Train	≡ƒ¢í∩╕Å Script Verification	2026-04-06T01:42:47.5727472Z [36;1mpython3 -m py_compile runpod/manage_pod.py runpod/run_challenge.py[0m
+≡ƒÜÇ Validate & Train	≡ƒ¢í∩╕Å Script Verification	2026-04-06T01:42:47.5755530Z shell: /usr/bin/bash -e {0}
+≡ƒÜÇ Validate & Train	≡ƒ¢í∩╕Å Script Verification	2026-04-06T01:42:47.5755788Z env:
+≡ƒÜÇ Validate & Train	≡ƒ¢í∩╕Å Script Verification	2026-04-06T01:42:47.5756066Z   pythonLocation: /opt/hostedtoolcache/Python/3.10.20/x64
+≡ƒÜÇ Validate & Train	≡ƒ¢í∩╕Å Script Verification	2026-04-06T01:42:47.5756521Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.10.20/x64/lib/pkgconfig
+≡ƒÜÇ Validate & Train	≡ƒ¢í∩╕Å Script Verification	2026-04-06T01:42:47.5756963Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.10.20/x64
+≡ƒÜÇ Validate & Train	≡ƒ¢í∩╕Å Script Verification	2026-04-06T01:42:47.5757368Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.10.20/x64
+≡ƒÜÇ Validate & Train	≡ƒ¢í∩╕Å Script Verification	2026-04-06T01:42:47.5757781Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.10.20/x64
+≡ƒÜÇ Validate & Train	≡ƒ¢í∩╕Å Script Verification	2026-04-06T01:42:47.5758198Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.10.20/x64/lib
+≡ƒÜÇ Validate & Train	≡ƒ¢í∩╕Å Script Verification	2026-04-06T01:42:47.5758546Z ##[endgroup]
+≡ƒÜÇ Validate & Train	≡ƒ¢í∩╕Å Script Verification	2026-04-06T01:42:47.5808112Z ≡ƒöì Verifying Python scripts syntax...
+≡ƒÜÇ Validate & Train	≡ƒ¢í∩╕Å CPU Validation	∩╗┐2026-04-06T01:42:47.6164009Z ##[group]Run PYTHONPATH=. python3 runpod/cpu_test.py
+≡ƒÜÇ Validate & Train	≡ƒ¢í∩╕Å CPU Validation	2026-04-06T01:42:47.6164637Z [36;1mPYTHONPATH=. python3 runpod/cpu_test.py[0m
+≡ƒÜÇ Validate & Train	≡ƒ¢í∩╕Å CPU Validation	2026-04-06T01:42:47.6190496Z shell: /usr/bin/bash -e {0}
+≡ƒÜÇ Validate & Train	≡ƒ¢í∩╕Å CPU Validation	2026-04-06T01:42:47.6190761Z env:
+≡ƒÜÇ Validate & Train	≡ƒ¢í∩╕Å CPU Validation	2026-04-06T01:42:47.6191034Z   pythonLocation: /opt/hostedtoolcache/Python/3.10.20/x64
+≡ƒÜÇ Validate & Train	≡ƒ¢í∩╕Å CPU Validation	2026-04-06T01:42:47.6191488Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.10.20/x64/lib/pkgconfig
+≡ƒÜÇ Validate & Train	≡ƒ¢í∩╕Å CPU Validation	2026-04-06T01:42:47.6191937Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.10.20/x64
+≡ƒÜÇ Validate & Train	≡ƒ¢í∩╕Å CPU Validation	2026-04-06T01:42:47.6192341Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.10.20/x64
+≡ƒÜÇ Validate & Train	≡ƒ¢í∩╕Å CPU Validation	2026-04-06T01:42:47.6192729Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.10.20/x64
+≡ƒÜÇ Validate & Train	≡ƒ¢í∩╕Å CPU Validation	2026-04-06T01:42:47.6193127Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.10.20/x64/lib
+≡ƒÜÇ Validate & Train	≡ƒ¢í∩╕Å CPU Validation	2026-04-06T01:42:47.6193455Z ##[endgroup]
+≡ƒÜÇ Validate & Train	≡ƒ¢í∩╕Å CPU Validation	2026-04-06T01:42:50.4239147Z Testing Project Golf Ball on CPU...
+≡ƒÜÇ Validate & Train	≡ƒ¢í∩╕Å CPU Validation	2026-04-06T01:42:50.4239696Z Running forward pass...
+≡ƒÜÇ Validate & Train	≡ƒ¢í∩╕Å CPU Validation	2026-04-06T01:42:50.4240056Z Initial Loss: 6.9279
+≡ƒÜÇ Validate & Train	≡ƒ¢í∩╕Å CPU Validation	2026-04-06T01:42:50.4240399Z Running backward pass...
+≡ƒÜÇ Validate & Train	≡ƒ¢í∩╕Å CPU Validation	2026-04-06T01:42:50.4240845Z Testing optimizer step...
+≡ƒÜÇ Validate & Train	≡ƒ¢í∩╕Å CPU Validation	2026-04-06T01:42:50.4241606Z CPU Test Passed! Model logic is sound.
+≡ƒÜÇ Validate & Train	≡ƒ¢░∩╕Å Resume or Deploy RunPod	∩╗┐2026-04-06T01:42:50.8420388Z ##[group]Run # 1. Determine Pod ID (Secret or Discovery)
+≡ƒÜÇ Validate & Train	≡ƒ¢░∩╕Å Resume or Deploy RunPod	2026-04-06T01:42:50.8420899Z [36;1m# 1. Determine Pod ID (Secret or Discovery)[0m
+≡ƒÜÇ Validate & Train	≡ƒ¢░∩╕Å Resume or Deploy RunPod	2026-04-06T01:42:50.8421234Z [36;1mPOD_ID="$SECRET_POD_ID"[0m
+≡ƒÜÇ Validate & Train	≡ƒ¢░∩╕Å Resume or Deploy RunPod	2026-04-06T01:42:50.8421560Z [36;1mif [ -z "$POD_ID" ] || [ "$POD_ID" == "null" ]; then[0m
+≡ƒÜÇ Validate & Train	≡ƒ¢░∩╕Å Resume or Deploy RunPod	2026-04-06T01:42:50.8422144Z [36;1m  DIS_POD=$(python3 runpod/manage_pod.py --find-pod --gpu_count 1 --json || echo '{"error": "not found"}')[0m
+≡ƒÜÇ Validate & Train	≡ƒ¢░∩╕Å Resume or Deploy RunPod	2026-04-06T01:42:50.8422727Z [36;1m  if echo "$DIS_POD" | jq -e '.id' >/dev/null 2>&1; then[0m
+≡ƒÜÇ Validate & Train	≡ƒ¢░∩╕Å Resume or Deploy RunPod	2026-04-06T01:42:50.8423100Z [36;1m    POD_ID=$(echo "$DIS_POD" | jq -r .id)[0m
+≡ƒÜÇ Validate & Train	≡ƒ¢░∩╕Å Resume or Deploy RunPod	2026-04-06T01:42:50.8423402Z [36;1m  fi[0m
+≡ƒÜÇ Validate & Train	≡ƒ¢░∩╕Å Resume or Deploy RunPod	2026-04-06T01:42:50.8423601Z [36;1mfi[0m
+≡ƒÜÇ Validate & Train	≡ƒ¢░∩╕Å Resume or Deploy RunPod	2026-04-06T01:42:50.8423789Z [36;1m[0m
+≡ƒÜÇ Validate & Train	≡ƒ¢░∩╕Å Resume or Deploy RunPod	2026-04-06T01:42:50.8423991Z [36;1m# 2. Resume or Deploy[0m
+≡ƒÜÇ Validate & Train	≡ƒ¢░∩╕Å Resume or Deploy RunPod	2026-04-06T01:42:50.8424508Z [36;1mNEEDS_WAIT=false[0m
+≡ƒÜÇ Validate & Train	≡ƒ¢░∩╕Å Resume or Deploy RunPod	2026-04-06T01:42:50.8424817Z [36;1mif [ ! -z "$POD_ID" ] && [ "$POD_ID" != "null" ]; then[0m
+≡ƒÜÇ Validate & Train	≡ƒ¢░∩╕Å Resume or Deploy RunPod	2026-04-06T01:42:50.8425219Z [36;1m  echo "≡ƒöä Resuming existing pod $POD_ID..."[0m
+≡ƒÜÇ Validate & Train	≡ƒ¢░∩╕Å Resume or Deploy RunPod	2026-04-06T01:42:50.8425727Z [36;1m  python3 runpod/manage_pod.py --resume "$POD_ID" --gpu_count 1 --json > pod_info.json[0m
+≡ƒÜÇ Validate & Train	≡ƒ¢░∩╕Å Resume or Deploy RunPod	2026-04-06T01:42:50.8426172Z [36;1melse[0m
+≡ƒÜÇ Validate & Train	≡ƒ¢░∩╕Å Resume or Deploy RunPod	2026-04-06T01:42:50.8426543Z [36;1m  echo "≡ƒåò Deploying new pod using 'Project Golf (H100 Optimized)' template..."[0m
+≡ƒÜÇ Validate & Train	≡ƒ¢░∩╕Å Resume or Deploy RunPod	2026-04-06T01:42:50.8427150Z [36;1m  [ ! -z "$SECRET_VOLUME_ID" ] && VOL_ARG="--network_volume_id $SECRET_VOLUME_ID" || VOL_ARG=""[0m
+≡ƒÜÇ Validate & Train	≡ƒ¢░∩╕Å Resume or Deploy RunPod	2026-04-06T01:42:50.8427626Z [36;1m  PUB_KEY=$(cat runpod/ssh_key.pub)[0m
+≡ƒÜÇ Validate & Train	≡ƒ¢░∩╕Å Resume or Deploy RunPod	2026-04-06T01:42:50.8428072Z [36;1m  # Use name 'Project Golf (H100 Optimized)' - script will resolve ID automatically[0m
+≡ƒÜÇ Validate & Train	≡ƒ¢░∩╕Å Resume or Deploy RunPod	2026-04-06T01:42:50.8428866Z [36;1m  python3 runpod/run_challenge.py --json --count 1 --template "Project Golf (H100 Optimized)" --ssh_public_key "$PUB_KEY" $VOL_ARG > pod_info.json[0m
+≡ƒÜÇ Validate & Train	≡ƒ¢░∩╕Å Resume or Deploy RunPod	2026-04-06T01:42:50.8429510Z [36;1m  NEEDS_WAIT=true[0m
+≡ƒÜÇ Validate & Train	≡ƒ¢░∩╕Å Resume or Deploy RunPod	2026-04-06T01:42:50.8429737Z [36;1mfi[0m
+≡ƒÜÇ Validate & Train	≡ƒ¢░∩╕Å Resume or Deploy RunPod	2026-04-06T01:42:50.8429933Z [36;1m[0m
+≡ƒÜÇ Validate & Train	≡ƒ¢░∩╕Å Resume or Deploy RunPod	2026-04-06T01:42:50.8430135Z [36;1mcat pod_info.json[0m
+≡ƒÜÇ Validate & Train	≡ƒ¢░∩╕Å Resume or Deploy RunPod	2026-04-06T01:42:50.8430408Z [36;1mPOD_ID=$(jq -r .pod_id pod_info.json)[0m
+≡ƒÜÇ Validate & Train	≡ƒ¢░∩╕Å Resume or Deploy RunPod	2026-04-06T01:42:50.8430689Z [36;1m[0m
+≡ƒÜÇ Validate & Train	≡ƒ¢░∩╕Å Resume or Deploy RunPod	2026-04-06T01:42:50.8430984Z [36;1m# 3. For fresh deploys, wait for full SSH readiness (API + socket)[0m
+≡ƒÜÇ Validate & Train	≡ƒ¢░∩╕Å Resume or Deploy RunPod	2026-04-06T01:42:50.8431384Z [36;1mif [ "$NEEDS_WAIT" = "true" ]; then[0m
+≡ƒÜÇ Validate & Train	≡ƒ¢░∩╕Å Resume or Deploy RunPod	2026-04-06T01:42:50.8431812Z [36;1m  echo "≡ƒöä Fresh deploy detected ΓÇö waiting for SSH readiness (up to 10 mins)..."[0m
+≡ƒÜÇ Validate & Train	≡ƒ¢░∩╕Å Resume or Deploy RunPod	2026-04-06T01:42:50.8432354Z [36;1m  python3 runpod/manage_pod.py --wait "$POD_ID" --json > pod_info.json[0m
+≡ƒÜÇ Validate & Train	≡ƒ¢░∩╕Å Resume or Deploy RunPod	2026-04-06T01:42:50.8432752Z [36;1m  cat pod_info.json[0m
+≡ƒÜÇ Validate & Train	≡ƒ¢░∩╕Å Resume or Deploy RunPod	2026-04-06T01:42:50.8432981Z [36;1mfi[0m
+≡ƒÜÇ Validate & Train	≡ƒ¢░∩╕Å Resume or Deploy RunPod	2026-04-06T01:42:50.8433162Z [36;1m[0m
+≡ƒÜÇ Validate & Train	≡ƒ¢░∩╕Å Resume or Deploy RunPod	2026-04-06T01:42:50.8433449Z [36;1mecho "pod_id=$(jq -r .pod_id pod_info.json)" >> $GITHUB_OUTPUT[0m
+≡ƒÜÇ Validate & Train	≡ƒ¢░∩╕Å Resume or Deploy RunPod	2026-04-06T01:42:50.8433875Z [36;1mecho "ip=$(jq -r .ip pod_info.json)" >> $GITHUB_OUTPUT[0m
+≡ƒÜÇ Validate & Train	≡ƒ¢░∩╕Å Resume or Deploy RunPod	2026-04-06T01:42:50.8434516Z [36;1mecho "port=$(jq -r .port pod_info.json)" >> $GITHUB_OUTPUT[0m
+≡ƒÜÇ Validate & Train	≡ƒ¢░∩╕Å Resume or Deploy RunPod	2026-04-06T01:42:50.8461714Z shell: /usr/bin/bash -e {0}
+≡ƒÜÇ Validate & Train	≡ƒ¢░∩╕Å Resume or Deploy RunPod	2026-04-06T01:42:50.8461989Z env:
+≡ƒÜÇ Validate & Train	≡ƒ¢░∩╕Å Resume or Deploy RunPod	2026-04-06T01:42:50.8462260Z   pythonLocation: /opt/hostedtoolcache/Python/3.10.20/x64
+≡ƒÜÇ Validate & Train	≡ƒ¢░∩╕Å Resume or Deploy RunPod	2026-04-06T01:42:50.8462720Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.10.20/x64/lib/pkgconfig
+≡ƒÜÇ Validate & Train	≡ƒ¢░∩╕Å Resume or Deploy RunPod	2026-04-06T01:42:50.8463160Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.10.20/x64
+≡ƒÜÇ Validate & Train	≡ƒ¢░∩╕Å Resume or Deploy RunPod	2026-04-06T01:42:50.8463566Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.10.20/x64
+≡ƒÜÇ Validate & Train	≡ƒ¢░∩╕Å Resume or Deploy RunPod	2026-04-06T01:42:50.8463999Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.10.20/x64
+≡ƒÜÇ Validate & Train	≡ƒ¢░∩╕Å Resume or Deploy RunPod	2026-04-06T01:42:50.8464821Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.10.20/x64/lib
+≡ƒÜÇ Validate & Train	≡ƒ¢░∩╕Å Resume or Deploy RunPod	2026-04-06T01:42:50.8465550Z   RUNPOD_API_KEY: ***
+≡ƒÜÇ Validate & Train	≡ƒ¢░∩╕Å Resume or Deploy RunPod	2026-04-06T01:42:50.8465775Z   SECRET_POD_ID: 
+≡ƒÜÇ Validate & Train	≡ƒ¢░∩╕Å Resume or Deploy RunPod	2026-04-06T01:42:50.8465979Z   SECRET_VOLUME_ID: 
+≡ƒÜÇ Validate & Train	≡ƒ¢░∩╕Å Resume or Deploy RunPod	2026-04-06T01:42:50.8466187Z ##[endgroup]
+≡ƒÜÇ Validate & Train	≡ƒ¢░∩╕Å Resume or Deploy RunPod	2026-04-06T01:42:52.4097050Z ≡ƒåò Deploying new pod using 'Project Golf (H100 Optimized)' template...
+≡ƒÜÇ Validate & Train	≡ƒ¢░∩╕Å Resume or Deploy RunPod	2026-04-06T01:42:52.5305217Z ≡ƒöì Searching for template ID for name: Project Golf (H100 Optimized)
+≡ƒÜÇ Validate & Train	≡ƒ¢░∩╕Å Resume or Deploy RunPod	2026-04-06T01:42:52.8445186Z Γ£à Found template ID: pd9i0qynfk
+≡ƒÜÇ Validate & Train	≡ƒ¢░∩╕Å Resume or Deploy RunPod	2026-04-06T01:42:54.2656757Z {"pod_id": "w3udblhnthbz4k", "status": "REQUESTED"}
+≡ƒÜÇ Validate & Train	≡ƒ¢░∩╕Å Resume or Deploy RunPod	2026-04-06T01:42:54.2686818Z ≡ƒöä Fresh deploy detected ΓÇö waiting for SSH readiness (up to 10 mins)...
+≡ƒÜÇ Validate & Train	≡ƒ¢░∩╕Å Resume or Deploy RunPod	2026-04-06T01:42:54.3910230Z ΓÅ│ Waiting for pod w3udblhnthbz4k to report SSH readiness via API (timeout=1200s)...
+≡ƒÜÇ Validate & Train	≡ƒ¢░∩╕Å Resume or Deploy RunPod	2026-04-06T02:03:01.8563423Z Γ¥î Timed out waiting for pod w3udblhnthbz4k API readiness after 1200s
+≡ƒÜÇ Validate & Train	≡ƒ¢░∩╕Å Resume or Deploy RunPod	2026-04-06T02:03:01.8737417Z ##[error]Process completed with exit code 1.
+≡ƒÜÇ Validate & Train	≡ƒñû Submit PR with Results	∩╗┐2026-04-06T02:03:01.8796983Z ##[group]Run IP=""
+≡ƒÜÇ Validate & Train	≡ƒñû Submit PR with Results	2026-04-06T02:03:01.8797285Z [36;1mIP=""[0m
+≡ƒÜÇ Validate & Train	≡ƒñû Submit PR with Results	2026-04-06T02:03:01.8797497Z [36;1mPORT=""[0m
+≡ƒÜÇ Validate & Train	≡ƒñû Submit PR with Results	2026-04-06T02:03:01.8797766Z [36;1mif [ -z "$IP" ] || [ "$PORT" == "null" ]; then[0m
+≡ƒÜÇ Validate & Train	≡ƒñû Submit PR with Results	2026-04-06T02:03:01.8798166Z [36;1m  echo "ΓÜá∩╕Å No pod IP/Port found. Skipping result sync."[0m
+≡ƒÜÇ Validate & Train	≡ƒñû Submit PR with Results	2026-04-06T02:03:01.8798522Z [36;1m  exit 0[0m
+≡ƒÜÇ Validate & Train	≡ƒñû Submit PR with Results	2026-04-06T02:03:01.8798729Z [36;1mfi[0m
+≡ƒÜÇ Validate & Train	≡ƒñû Submit PR with Results	2026-04-06T02:03:01.8798935Z [36;1m[0m
+≡ƒÜÇ Validate & Train	≡ƒñû Submit PR with Results	2026-04-06T02:03:01.8799163Z [36;1mecho "≡ƒôª Syncing results from pod..."[0m
+≡ƒÜÇ Validate & Train	≡ƒñû Submit PR with Results	2026-04-06T02:03:01.8799560Z [36;1m# Fix: Use -o before -P and ensure IP/PORT are sanitized[0m
+≡ƒÜÇ Validate & Train	≡ƒñû Submit PR with Results	2026-04-06T02:03:01.8800379Z [36;1mscp -i ~/.ssh/id_ed25519 -o StrictHostKeyChecking=no -P "$PORT" root@"$IP":/workspace/Project-Golf-Ball/results_summary.json . || echo "0.0 0.0 0.0" > results_summary.json[0m
+≡ƒÜÇ Validate & Train	≡ƒñû Submit PR with Results	2026-04-06T02:03:01.8801096Z [36;1m[0m
+≡ƒÜÇ Validate & Train	≡ƒñû Submit PR with Results	2026-04-06T02:03:01.8801329Z [36;1mecho "≡ƒô¥ Generating PR description..."[0m
+≡ƒÜÇ Validate & Train	≡ƒñû Submit PR with Results	2026-04-06T02:03:01.8801810Z [36;1mpython3 runpod/generate_pr_description.py "results_summary.json" > pr_body.txt[0m
+≡ƒÜÇ Validate & Train	≡ƒñû Submit PR with Results	2026-04-06T02:03:01.8802288Z [36;1m[0m
+≡ƒÜÇ Validate & Train	≡ƒñû Submit PR with Results	2026-04-06T02:03:01.8802503Z [36;1m# Automated result submission logic[0m
+≡ƒÜÇ Validate & Train	≡ƒñû Submit PR with Results	2026-04-06T02:03:01.8802833Z [36;1mgit checkout -b results/run-24015324515[0m
+≡ƒÜÇ Validate & Train	≡ƒñû Submit PR with Results	2026-04-06T02:03:01.8803143Z [36;1mgit add results_summary.json[0m
+≡ƒÜÇ Validate & Train	≡ƒñû Submit PR with Results	2026-04-06T02:03:01.8803740Z [36;1mgit commit -m "Submit results for run 24015324515" || echo "No results to commit"[0m
+≡ƒÜÇ Validate & Train	≡ƒñû Submit PR with Results	2026-04-06T02:03:01.8804544Z [36;1mgit push origin results/run-24015324515[0m
+≡ƒÜÇ Validate & Train	≡ƒñû Submit PR with Results	2026-04-06T02:03:01.8804999Z [36;1m[0m
+≡ƒÜÇ Validate & Train	≡ƒñû Submit PR with Results	2026-04-06T02:03:01.8805225Z [36;1mecho "≡ƒ¢░∩╕Å Creating Pull Request..."[0m
+≡ƒÜÇ Validate & Train	≡ƒñû Submit PR with Results	2026-04-06T02:03:01.8805806Z [36;1mgh pr create --title "Run Results #24015324515" --body-file pr_body.txt --base main --head results/run-24015324515[0m
+≡ƒÜÇ Validate & Train	≡ƒñû Submit PR with Results	2026-04-06T02:03:01.8832892Z shell: /usr/bin/bash -e {0}
+≡ƒÜÇ Validate & Train	≡ƒñû Submit PR with Results	2026-04-06T02:03:01.8833153Z env:
+≡ƒÜÇ Validate & Train	≡ƒñû Submit PR with Results	2026-04-06T02:03:01.8833430Z   pythonLocation: /opt/hostedtoolcache/Python/3.10.20/x64
+≡ƒÜÇ Validate & Train	≡ƒñû Submit PR with Results	2026-04-06T02:03:01.8833888Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.10.20/x64/lib/pkgconfig
+≡ƒÜÇ Validate & Train	≡ƒñû Submit PR with Results	2026-04-06T02:03:01.8834484Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.10.20/x64
+≡ƒÜÇ Validate & Train	≡ƒñû Submit PR with Results	2026-04-06T02:03:01.8834887Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.10.20/x64
+≡ƒÜÇ Validate & Train	≡ƒñû Submit PR with Results	2026-04-06T02:03:01.8835288Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.10.20/x64
+≡ƒÜÇ Validate & Train	≡ƒñû Submit PR with Results	2026-04-06T02:03:01.8835693Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.10.20/x64/lib
+≡ƒÜÇ Validate & Train	≡ƒñû Submit PR with Results	2026-04-06T02:03:01.8836320Z   GH_PAT_SUBMISSION: ***
+≡ƒÜÇ Validate & Train	≡ƒñû Submit PR with Results	2026-04-06T02:03:01.8836558Z ##[endgroup]
+≡ƒÜÇ Validate & Train	≡ƒñû Submit PR with Results	2026-04-06T02:03:01.8884906Z ΓÜá∩╕Å No pod IP/Port found. Skipping result sync.
+≡ƒÜÇ Validate & Train	Post Run actions/checkout@v4	∩╗┐2026-04-06T02:03:01.8963840Z Post job cleanup.
+≡ƒÜÇ Validate & Train	Post Run actions/checkout@v4	2026-04-06T02:03:01.9895888Z [command]/usr/bin/git version
+≡ƒÜÇ Validate & Train	Post Run actions/checkout@v4	2026-04-06T02:03:01.9932231Z git version 2.53.0
+≡ƒÜÇ Validate & Train	Post Run actions/checkout@v4	2026-04-06T02:03:01.9975561Z Temporarily overriding HOME='/home/runner/work/_temp/e15567ed-ce97-4bfb-900e-ad16e8160a23' before making global git config changes
+≡ƒÜÇ Validate & Train	Post Run actions/checkout@v4	2026-04-06T02:03:01.9976642Z Adding repository directory to the temporary git global config as a safe directory
+≡ƒÜÇ Validate & Train	Post Run actions/checkout@v4	2026-04-06T02:03:01.9981485Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/Project-Golf-Ball/Project-Golf-Ball
+≡ƒÜÇ Validate & Train	Post Run actions/checkout@v4	2026-04-06T02:03:02.0016800Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+≡ƒÜÇ Validate & Train	Post Run actions/checkout@v4	2026-04-06T02:03:02.0047615Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+≡ƒÜÇ Validate & Train	Post Run actions/checkout@v4	2026-04-06T02:03:02.0268841Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+≡ƒÜÇ Validate & Train	Post Run actions/checkout@v4	2026-04-06T02:03:02.0288008Z http.https://github.com/.extraheader
+≡ƒÜÇ Validate & Train	Post Run actions/checkout@v4	2026-04-06T02:03:02.0300141Z [command]/usr/bin/git config --local --unset-all http.https://github.com/.extraheader
+≡ƒÜÇ Validate & Train	Post Run actions/checkout@v4	2026-04-06T02:03:02.0329686Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+≡ƒÜÇ Validate & Train	Post Run actions/checkout@v4	2026-04-06T02:03:02.0544382Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+≡ƒÜÇ Validate & Train	Post Run actions/checkout@v4	2026-04-06T02:03:02.0573905Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+≡ƒÜÇ Validate & Train	Complete job	∩╗┐2026-04-06T02:03:02.0908331Z Cleaning up orphan processes
+≡ƒÜÇ Validate & Train	Complete job	2026-04-06T02:03:02.1227927Z ##[warning]Node.js 20 actions are deprecated. The following actions are running on Node.js 20 and may not work as expected: actions/checkout@v4, actions/setup-python@v5. Actions will be forced to run with Node.js 24 by default starting June 2nd, 2026. Node.js 20 will be removed from the runner on September 16th, 2026. Please check if updated versions of these actions are available that support Node.js 24. To opt into Node.js 24 now, set the FORCE_JAVASCRIPT_ACTIONS_TO_NODE24=true environment variable on the runner or in your workflow file. Once Node.js 24 becomes the default, you can temporarily opt out by setting ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION=true. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
