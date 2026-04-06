@@ -45,7 +45,19 @@ def generate_description(results_summary, project_md_path):
     return title, description
 
 if __name__ == "__main__":
-    res_sum = sys.argv[1] # e.g. "0.8012 0.8023 0.7998"
+    if len(sys.argv) < 2:
+        print("Error: No results summary or filename provided.", file=sys.stderr)
+        sys.exit(1)
+
+    res_input = sys.argv[1]
+    res_sum = ""
+    # If the argument is a file path, read the file contents
+    if os.path.exists(res_input):
+        with open(res_input, "r") as f:
+            res_sum = f.read().strip()
+    else:
+        res_sum = res_input.strip()
+
     proj_md = "PROJECT_GOLF_BALL_EXTRACTED.md"
     
     title, body = generate_description(res_sum, proj_md)
@@ -55,3 +67,6 @@ if __name__ == "__main__":
         f.write(title)
     with open("pr_body.md", "w") as f:
         f.write(body)
+    
+    # Also print body for stdout capturing in some workflows
+    print(body)

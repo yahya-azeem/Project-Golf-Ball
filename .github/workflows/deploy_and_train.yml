@@ -131,8 +131,14 @@ jobs:
         run: |
           IP="${{ steps.manage.outputs.ip }}"
           PORT="${{ steps.manage.outputs.port }}"
+          if [ -z "$IP" ] || [ "$PORT" == "null" ]; then
+            echo "⚠️ No pod IP/Port found. Skipping result sync."
+            exit 0
+          fi
+          
           echo "📦 Syncing results from pod..."
-          scp -i ~/.ssh/id_ed25519 -P $PORT -o StrictHostKeyChecking=no root@$IP:/workspace/Project-Golf-Ball/results_summary.json . || echo "{}" > results_summary.json
+          # Fix: Use -o before -P and ensure IP/PORT are sanitized
+          scp -i ~/.ssh/id_ed25519 -o StrictHostKeyChecking=no -P "$PORT" root@"$IP":/workspace/Project-Golf-Ball/results_summary.json . || echo "0.0 0.0 0.0" > results_summary.json
           
           echo "📝 Generating PR description..."
           python3 runpod/generate_pr_description.py "results_summary.json" > pr_body.txt

@@ -37,7 +37,7 @@ def find_pod(count=1):
         print(f"⚠️ Error listing pods: {e}", file=sys.stderr)
     return None
 
-def wait_for_pod(pod_id, timeout=600):
+def wait_for_pod(pod_id, timeout=1200):
     """Wait for RunPod API to report the pod as running with SSH port mapped."""
     start_time = time.time()
     print(f"⏳ Waiting for pod {pod_id} to report SSH readiness via API (timeout={timeout}s)...", file=sys.stderr)
