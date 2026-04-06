@@ -169,3 +169,16 @@ jobs:
           
           echo "🛰️ Creating Pull Request..."
           gh pr create --title "Run Results #${{ github.run_id }}" --body-file pr_body.txt --base main --head results/run-${{ github.run_id }}
+
+      - name: 🧹 Cleanup RunPod
+        if: always()
+        env:
+          RUNPOD_API_KEY: ${{ secrets.RUNPOD_API_KEY }}
+        run: |
+          POD_ID="${{ steps.manage.outputs.pod_id }}"
+          if [ ! -z "$POD_ID" ] && [ "$POD_ID" != "null" ]; then
+            echo "🛑 Terminating pod $POD_ID to prevent cost leakage..."
+            python3 runpod/run_challenge.py --terminate "$POD_ID"
+          else
+            echo "ℹ️ No pod to terminate (provisioning failed early or no pod requested)."
+          fi
