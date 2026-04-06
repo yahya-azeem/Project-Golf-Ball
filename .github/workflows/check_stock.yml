@@ -1,0 +1,29 @@
+name: 🔍 Check RunPod Stock
+on:
+  workflow_dispatch:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+      - name: Install requests
+        run: pip install requests
+      - name: Check Stock
+        env:
+          RUNPOD_API_KEY: ${{ secrets.RUNPOD_API_KEY }}
+        run: |
+          python3 -c "
+          import requests, os, json
+          API_KEY = os.environ.get('RUNPOD_API_KEY')
+          headers = {'Authorization': f'Bearer {API_KEY}'}
+          r = requests.get('https://rest.runpod.io/v1/gpu-types', headers=headers)
+          gpus = r.json()
+          for g in gpus:
+              if 'H100' in g['name'] or 'A100' in g['name']:
+                  print(f\"ID: {g['id']}, Name: {g['name']}, Secure: {g.get('secureStock', 0)}, Community: {g.get('communityStock', 0)}\")
+          "
