@@ -22,8 +22,14 @@ jobs:
           API_KEY = os.environ.get('RUNPOD_API_KEY')
           headers = {'Authorization': f'Bearer {API_KEY}'}
           r = requests.get('https://rest.runpod.io/v1/gpu-types', headers=headers)
-          gpus = r.json()
+          data = r.json()
+          # If data is a dict instead of list, check for a 'gpus' or similar key
+          gpus = data if isinstance(data, list) else data.get('gpus', [])
+          if not gpus and isinstance(data, dict):
+              print(f'Full Response: {json.dumps(data, indent=2)}')
           for g in gpus:
-              if 'H100' in g['name'] or 'A100' in g['name']:
-                  print(f\"ID: {g['id']}, Name: {g['name']}, Secure: {g.get('secureStock', 0)}, Community: {g.get('communityStock', 0)}\")
+              name = g.get('name', 'Unknown')
+              id = g.get('id', 'Unknown')
+              if 'H100' in name or 'A100' in name:
+                  print(f\"ID: {id}, Name: {name}, Secure: {g.get('secureStock', 0)}, Community: {g.get('communityStock', 0)}\")
           "
